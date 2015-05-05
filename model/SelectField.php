@@ -17,14 +17,16 @@ class SelectField extends FormField {
         }
     }
 
+    public function parseRequiredRegex($matches) {
+        $this->prefixHtmlTagName($this->requiredPrefix);
+        return $this->getHtml();
+    }
+
     public function parseRequired() {
         $self = $this;
         $this->html = preg_replace_callback(
             '/<select[^>]*required[^>]*>.*<\/select>/imsU',
-            function ($matches) use ($self) {
-                $self->prefixHtmlTagName($self->requiredPrefix);
-                return $self->getHtml();
-            },
+            array($this, 'parseRequiredRegex'),
             $this->html
         );
     }
