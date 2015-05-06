@@ -159,7 +159,7 @@ class Mf100RegistrationFront extends Mf100RegistrationCore {
             }
 
             $meta = get_user_meta($user->ID);
-            $this->filledValues = $this->prepareMeta($meta);
+            $this->filledValues = array_merge($this->filledValues, $this->prepareMeta($meta));
         }
 
         if (preg_match('/<form[^>]*>/imsU', $content, $match) && isset($atts['rocnik'])) {
