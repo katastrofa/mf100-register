@@ -13,20 +13,7 @@
 class Mf100RegistrationFront extends Mf100RegistrationCore {
 
     private $FIELDS = array(
-        'year' => true,
-        'first_name' => true,
-        'last_name' => true,
-        'user_email' => true,
-        'mobil' => true,
-        'obec' => true,
-        'klub' => true,
-        'trasa' => 'mf100_%year%',
-        'ubytovanie-pred-startom' => true,
-        'ubytovanie-v-cieli-mf100' => true,
-        'transport-batoziny-mf50' => true,
-        'transport-batoziny-mf100' => true,
-        'specialne-jedlo' => true,
-        'typ-diety' => true
+        'trasa' => 'mf100_%year%'
     );
 
     private $objErrors = null;
@@ -260,15 +247,20 @@ class Mf100RegistrationFront extends Mf100RegistrationCore {
 /// Display registered users
 ///==========================================================================================
 
-    protected function parseUserTemplate($user, $template, $year) {
-        foreach ($this->FIELDS as $field => $replaceField) {
-            if (is_string($replaceField)) {
-                $replaceField = str_replace('%year%', $year, $replaceField);
-                $template = str_replace('%' . $field . '%', $user->$replaceField, $template);
-            } else {
-                $template = str_replace('%' . $field . '%', $user->$field, $template);
-            }
+    public function parseUserTemplateCallback($match) {
+        if (isset($this->FIELDS_MAP[$match[1]])) {
+            $replaceField = str_replace('%year%', $this->tmpYear, $this->FIELDS[$match[1]]);
+            return $this->tmpUser->$replaceField;
+        } else {
+            $field = $match[1];
+            return $this->tmpUser->$field;
         }
+    }
+
+    protected function parseUserTemplate($user, $template, $year) {
+        $this->tmpYear = $year;
+        $this->tmpUser = $user;
+        $template = preg_replace_callback("/\\%([^%]+)\\%/iU", array($this, 'parseUserTemplateCallback'), $template);
         return $template;
     }
 
