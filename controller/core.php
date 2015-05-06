@@ -59,6 +59,14 @@ class Mf100RegistrationCore {
             'meta_key' => self::REG_KEY . '_' . $year,
             'fields' => 'all_with_meta'
         ));
+
+        foreach ($users as &$user) {
+            $meta = $this->prepareMeta(get_user_meta($user->ID));
+            foreach ($meta as $key => $value) {
+                $user->$key = $value;
+            }
+        }
+
         return $users;
     }
 
