@@ -20,6 +20,8 @@ class Mf100RegistrationCore {
     const EMAIL_FIELD = 'user_email';
     const RACE_FIELD = 'trasa';
     const YEAR_FIELD = 'rocnik';
+    const FIRST_NAME_FIELD = 'first_name';
+    const LAST_NAME_FIELD = 'last_name';
 
     const META_KEY_PREFIX = 'mf100-';
     const REG_KEY = 'mf100';

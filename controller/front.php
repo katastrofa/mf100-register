@@ -189,7 +189,11 @@ class Mf100RegistrationFront extends Mf100RegistrationCore {
         unset($aValues['user_email'], $aValues['rocnik'], $aValues['mf100-reg']);
 
         foreach ($aValues as $key => $value) {
-            update_user_meta($user->ID, self::META_KEY_PREFIX . $key, $value);
+            if ($key == self::FIRST_NAME_FIELD || $key == self::LAST_NAME_FIELD) {
+                update_user_meta($user->ID, $key, $value);
+            } else {
+                update_user_meta($user->ID, self::META_KEY_PREFIX . $key, $value);
+            }
         }
         /// TODO: Remove old user meta
 	}
