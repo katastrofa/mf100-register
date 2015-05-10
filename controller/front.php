@@ -1,13 +1,9 @@
 <?php
 
-/// DONE: Response from registration
 /// TODO: Protect registration form
 /// TODO: Unregister
-/// TODO: Parse passed values from registration
-/// DONE: Backend edit window
 /// TODO: Show page options for backend
-/// DONE: Parse required fields
-/// TODO: Show reg errors
+
 
 
 class Mf100RegistrationFront extends Mf100RegistrationCore {
