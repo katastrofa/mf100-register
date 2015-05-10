@@ -182,7 +182,12 @@ class Mf100RegistrationFront extends Mf100RegistrationCore {
                 update_user_meta($user->ID, self::META_KEY_PREFIX . $key, $value);
             }
         }
-        /// TODO: Remove old user meta
+
+        $storedMeta = $this->getMf100Meta($user->ID);
+        $metaToRemove = array_diff_key($storedMeta, $aValues);
+        foreach ($metaToRemove as $key => $value) {
+            delete_user_meta($user->ID, self::META_KEY_PREFIX . $key);
+        }
 	}
 
     protected function validateRequiredFields() {

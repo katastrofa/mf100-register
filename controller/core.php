@@ -83,6 +83,18 @@ class Mf100RegistrationCore {
         return $newMeta;
     }
 
+    protected function getMf100Meta($idUser) {
+        $meta = get_user_meta($idUser);
+        $return = array();
+        foreach ($meta as $key => $value) {
+            if (is_string($key) && self::META_KEY_PREFIX == substr($key, 0, strlen(self::META_KEY_PREFIX))) {
+                $return[substr($key, strlen(self::META_KEY_PREFIX))] = $value[0];
+            }
+        }
+
+        return $return;
+    }
+
     protected function showTemplate($name, $vars = array(), $section = 'admin') {
         if (is_array($vars)) {
             foreach ($vars as $key => $value) {
