@@ -67,7 +67,7 @@ class Mf100RegistrationFront extends Mf100RegistrationCore {
 
             if ($fillValue) {
                 $formField->fillValue($fillValue);
-                if ('user_email' == $name) {
+                if ('user_email' == $name || !$formField->isEditable()) {
                     $formField->transformToHidden();
                 }
             }
