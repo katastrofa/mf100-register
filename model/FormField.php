@@ -67,4 +67,9 @@ abstract class FormField {
         $this->html = '<div class="">' . $this->value . "</div>\n"
                 . "<input type=\"hidden\" name=\"{$this->name}\" value=\"{$this->value}\" />";
     }
+
+    public function isEditable() {
+        $tag = preg_quote($this->tag);
+        return (preg_match('/<'.$tag.'[^>]*no-edit[^>]*>/imsU', $this->originalHtml) <= 0);
+    }
 }
