@@ -2,7 +2,7 @@
 /*
 Plugin Name: MF100 registration
 Description: Registration form and management options for MF100
-Version: 0.1.5
+Version: 0.2.0
 Author: Peter Baran
 License: LGPL2
 */
