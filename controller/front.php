@@ -132,6 +132,10 @@ class Mf100RegistrationFront extends Mf100RegistrationCore {
             $content = $this->showErrors($content);
         }
 
+        if (!isset($atts['rocnik'])) {
+            return '';
+        }
+
         $user = wp_get_current_user();
         if (!is_array($this->filledValues) && 0 != $user->ID) {
             $this->filledValues = array();
@@ -145,13 +149,11 @@ class Mf100RegistrationFront extends Mf100RegistrationCore {
             $this->filledValues = array_merge($this->filledValues, $this->prepareMeta($meta));
         }
 
-        $options = get_option(self::OPTIONS_NAME);
-
-        $formAndYearLocated = preg_match('/<form[^>]*>/imsU', $content, $match) && isset($atts['rocnik']);
-        $stopRegistration = (isset($options[self::OPT_STOP_REG]) && 'yes' == $options[self::OPT_STOP_REG]);
+        $options = Mf100Options::getInstance();
+        $formAndYearLocated = preg_match('/<form[^>]*>/imsU', $content, $match);
         $submission = (is_array($this->filledValues) && count($this->filledValues) > 0);
 
-        if ($formAndYearLocated && ($submission || !$stopRegistration)) {
+        if ($formAndYearLocated && !$this->isRegFull($atts['rocnik']) && ($submission || !$options->isStopReg())) {
 			$strForm = str_replace("\n", ' ', $match[0]);
 
 			$strForm = $this->addTagAttribute($strForm, 'action', '');
@@ -288,18 +290,19 @@ class Mf100RegistrationFront extends Mf100RegistrationCore {
 
     public function showRegistrationResponse($atts, $content = '') {
         $atts = shortcode_atts(
-            array( 'type' => 'success' ),
+            array( 'type' => 'success', 'rocnik' => date('Y') ),
             $atts,
             'mf100_response'
         );
 
-        $options = get_option(self::OPTIONS_NAME);
-        $stopRegistration = (isset($options[self::OPT_STOP_REG]) && 'yes' == $options[self::OPT_STOP_REG]);
+        $options = Mf100Options::getInstance();
 
         if ($this->bUserRegistered && 'success' == $atts['type']) {
             $content = str_replace('%first_name%', $this->objRegisteredUser->first_name, $content);
             $content = str_replace('%last_name%', $this->objRegisteredUser->last_name, $content);
-        } else if($stopRegistration && 'reg-stopped' == $atts['type']) {
+        } else if ($options->isStopReg() && 'reg-stopped' == $atts['type']) {
+            // Output the plain text then
+        } else if ($this->isRegFull($atts['rocnik']) && 'reg-full' == $atts['type']) {
             // Output the plain text then
         } else {
             $content = '';

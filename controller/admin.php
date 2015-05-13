@@ -21,7 +21,7 @@ class Mf100RegistrationAdmin extends Mf100RegistrationCore {
     }
 
     public function initOptions() {
-        register_setting('mf100-options', self::OPTIONS_NAME, array($this, 'parseOptions'));
+        register_setting('mf100-options', Mf100Options::OPTIONS_NAME, array($this, 'parseOptions'));
 
         add_settings_section(
             'mf100-section',
@@ -31,18 +31,25 @@ class Mf100RegistrationAdmin extends Mf100RegistrationCore {
         );
 
         add_settings_field(
-            self::OPT_STOP_REG,
+            Mf100Options::OPT_STOP_REG,
             'Pozastavit registraciu',
             array($this, 'stopRegCallback'),
+            'mf100-options-page',
+            'mf100-section'
+        );
+
+        add_settings_field(
+            Mf100Options::OPT_REG_LIMIT,
+            'Limit ucastnikov',
+            array($this, 'regLimitCallback'),
             'mf100-options-page',
             'mf100-section'
         );
     }
 
     public function parseOptions($rawOptions) {
-        $options = array();
-        $options[self::OPT_STOP_REG] = isset($rawOptions[self::OPT_STOP_REG]) ? 'yes' : 'no';
-        return $options;
+        $options = Mf100Options::getInstance();
+        return $options->parseOptions($rawOptions);
     }
 
     public function addUsersMenuPage() {
@@ -64,8 +71,8 @@ class Mf100RegistrationAdmin extends Mf100RegistrationCore {
     }
 
     public function showOptionsPage() {
-        $this->options = get_option(self::OPTIONS_NAME);
-        $this->showTemplate('options-page');
+        $options = Mf100Options::getInstance();
+        $this->showTemplate('options-page', array('options' => $options));
     }
 
     public function showSectionTitle() {
@@ -73,12 +80,24 @@ class Mf100RegistrationAdmin extends Mf100RegistrationCore {
     }
 
     public function stopRegCallback() {
-        $stopReg = (isset($this->options[self::OPT_STOP_REG]) && 'yes' == $this->options[self::OPT_STOP_REG]);
+        $options = Mf100Options::getInstance();
         printf(
-            '<input type="checkbox" id="%s" name="mf100_options[%s]" value="yes" %s />',
-            self::OPT_STOP_REG,
-            self::OPT_STOP_REG,
-            ($stopReg) ? 'checked="checked"' : ''
+            '<input type="checkbox" id="%s" name="%s[%s]" value="yes" %s />',
+            Mf100Options::OPT_STOP_REG,
+            Mf100Options::OPTIONS_NAME,
+            Mf100Options::OPT_STOP_REG,
+            ($options->isStopReg()) ? 'checked="checked"' : ''
+        );
+    }
+
+    public function regLimitCallback() {
+        $options = Mf100Options::getInstance();
+        printf(
+            '<input type="text" id="%s" name="%s[%s]" value="%s" class="small-text" />',
+            Mf100Options::OPT_REG_LIMIT,
+            Mf100Options::OPTIONS_NAME,
+            Mf100Options::OPT_REG_LIMIT,
+            (is_numeric($options->getRegLimit()) && 0 < $options->getRegLimit()) ? "" . $options->getRegLimit() : ''
         );
     }
 }
