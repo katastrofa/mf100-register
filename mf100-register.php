@@ -9,10 +9,12 @@ License: LGPL2
 
 define('MF100_BASE_PATH', dirname(__FILE__));
 
+require(dirname(__FILE__) . '/model/Mf100Options.php');
+require(dirname(__FILE__) . '/controller/core.php');
+
 if (is_admin()) {
     define('MF100_BASE_LINK', plugin_dir_url(__FILE__));
 
-    require(dirname(__FILE__) . '/controller/core.php');
 	require(dirname(__FILE__) . '/controller/admin.php');
 } else {
     require(dirname(__FILE__) . '/model/FormField.php');
@@ -24,7 +26,6 @@ if (is_admin()) {
     require(dirname(__FILE__) . '/model/FormFieldIterator.php');
 
     require(dirname(__FILE__) . '/controller/construct.php');
-    require(dirname(__FILE__) . '/controller/core.php');
 	require(dirname(__FILE__) . '/controller/front.php');
 }
 
