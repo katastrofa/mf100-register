@@ -145,7 +145,13 @@ class Mf100RegistrationFront extends Mf100RegistrationCore {
             $this->filledValues = array_merge($this->filledValues, $this->prepareMeta($meta));
         }
 
-        if (preg_match('/<form[^>]*>/imsU', $content, $match) && isset($atts['rocnik'])) {
+        $options = get_option(self::OPTIONS_NAME);
+
+        $formAndYearLocated = preg_match('/<form[^>]*>/imsU', $content, $match) && isset($atts['rocnik']);
+        $stopRegistration = (isset($options[self::OPT_STOP_REG]) && 'yes' == $options[self::OPT_STOP_REG]);
+        $submission = (is_array($this->filledValues) && count($this->filledValues) > 0);
+
+        if ($formAndYearLocated && ($submission || !$stopRegistration)) {
 			$strForm = str_replace("\n", ' ', $match[0]);
 
 			$strForm = $this->addTagAttribute($strForm, 'action', '');
@@ -154,11 +160,9 @@ class Mf100RegistrationFront extends Mf100RegistrationCore {
 			$content = str_replace($match[0], $strForm, $content);
 			$content = $this->parseFormFields($content, $atts['rocnik'], $this->filledValues);
 
-		} else if (!isset($atts['rocnik'])) {
-			return "<p>Nastavte rocnik prihlasovacieho formularu</p>";
 		} else {
-			return "<p>Text shorttagu neobsahuje formular</p>";
-		}
+            $content = '';
+        }
 
 		return $content;
 	}
@@ -289,9 +293,14 @@ class Mf100RegistrationFront extends Mf100RegistrationCore {
             'mf100_response'
         );
 
+        $options = get_option(self::OPTIONS_NAME);
+        $stopRegistration = (isset($options[self::OPT_STOP_REG]) && 'yes' == $options[self::OPT_STOP_REG]);
+
         if ($this->bUserRegistered && 'success' == $atts['type']) {
             $content = str_replace('%first_name%', $this->objRegisteredUser->first_name, $content);
             $content = str_replace('%last_name%', $this->objRegisteredUser->last_name, $content);
+        } else if($stopRegistration && 'reg-stopped' == $atts['type']) {
+            // Output the plain text then
         } else {
             $content = '';
         }
