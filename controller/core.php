@@ -26,6 +26,10 @@ class Mf100RegistrationCore {
     const META_KEY_PREFIX = 'mf100-';
     const REG_KEY = 'mf100';
 
+    const OPT_STOP_REG = 'mf100-stop-reg';
+
+    const OPTIONS_NAME = 'mf100_options';
+
     protected function registerUser($user, $year, $race) {
         update_user_meta($user->ID, self::REG_KEY . '_' . $year, $race);
     }
