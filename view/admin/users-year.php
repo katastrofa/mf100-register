@@ -4,18 +4,21 @@
             <tr>
                 <th scope="col" id="name" class="manage-column column-name sortable desc">Meno</th>
                 <th scope="col" id="email" class="manage-column column-email sortable desc">Email</th>
-                <th scope="col" id="phone" class="manage-column">Mobil</th>
-                <th scope="col" id="obec" class="manage-column">Obec</th>
-                <th scope="col" id="klub" class="manage-column">Klub</th>
+                <?php $userOptions = Mf100UserOptions::getInstance(); ?>
+                <?php foreach ($fields as $value) : ?>
+                    <?php $display = ($userOptions->isFieldVisible($value)) ? '' : 'style="display: none;"'; ?>
+                    <th scope="col" id="mf100-col-<?php echo $value; ?>" class="mf100-<?php echo $value; ?>" <?php echo $display; ?>><?php echo $value; ?></th>
+                <?php endforeach; ?>
             </tr>
         </thead>
         <tfoot>
             <tr>
                 <th scope="col" class="manage-column column-name sortable desc">Meno</th>
                 <th scope="col" class="manage-column column-email sortable desc">Email</th>
-                <th scope="col" class="manage-column">Mobil</th>
-                <th scope="col" class="manage-column">Obec</th>
-                <th scope="col" class="manage-column">Klub</th>
+                <?php foreach ($fields as $value) : ?>
+                    <?php $display = ($userOptions->isFieldVisible($value)) ? '' : 'style="display: none;"'; ?>
+                    <th scope="col" class="mf100-<?php echo $value; ?>" <?php echo $display; ?>><?php echo $value; ?></th>
+                <?php endforeach; ?>
             </tr>
         </tfoot>
 
@@ -24,7 +27,7 @@
             <?php foreach ($users as &$user) : ?>
                 <?php $alternate = $alternate xor true; ?>
                 <?php $user->meta = $this->prepareMeta(get_user_meta($user->ID)); ?>
-                <?php $this->showTemplate('user-line', array('user' => $user, 'alternate' => $alternate)); ?>
+                <?php $this->showTemplate('user-line', array('user' => $user, 'alternate' => $alternate, 'fields' => $fields)); ?>
             <?php endforeach; ?>
         </tbody>
 
