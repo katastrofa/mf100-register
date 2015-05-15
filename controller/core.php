@@ -118,6 +118,23 @@ class Mf100RegistrationCore {
         return $return;
     }
 
+    protected function getAvailableUserMeta() {
+        global $wpdb;
+
+        $select =
+            "SELECT `meta_key` FROM `{$wpdb->prefix}usermeta`
+                WHERE `meta_key` LIKE '" . self::META_KEY_PREFIX . "%'
+                GROUP BY `meta_key`";
+        $results = $wpdb->get_results($select);
+
+        $return = array();
+        foreach ($results as $row) {
+            $return[] = substr($row->meta_key, strlen(self::META_KEY_PREFIX));
+        }
+
+        return $return;
+    }
+
     protected function showTemplate($name, $vars = array(), $section = 'admin') {
         if (is_array($vars)) {
             foreach ($vars as $key => $value) {

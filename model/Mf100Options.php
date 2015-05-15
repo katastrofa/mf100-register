@@ -4,6 +4,7 @@ class Mf100Options {
 
     const OPT_STOP_REG = 'stop-reg';
     const OPT_REG_LIMIT = 'reg-limit';
+
     const OPTIONS_NAME = 'mf100_options';
 
     private static $INSTANCE = null;
@@ -27,7 +28,14 @@ class Mf100Options {
         }
     }
 
-    public function parseOptions($rawOptions) {
+    private function generateOptionsArray() {
+        return array(
+            self::OPT_STOP_REG => $this->stopReg,
+            self::OPT_REG_LIMIT => $this->regLimit
+        );
+    }
+
+    public function parseOptionsPage($rawOptions) {
         if (isset($rawOptions[self::OPT_STOP_REG])) {
             $this->setStopReg($rawOptions[self::OPT_STOP_REG]);
         } else {
@@ -39,10 +47,12 @@ class Mf100Options {
             $this->setRegLimit(false);
         }
 
-        return array(
-            self::OPT_STOP_REG => $this->stopReg,
-            self::OPT_REG_LIMIT => $this->regLimit
-        );
+        return $this->generateOptionsArray();
+    }
+
+    public function storeOptions() {
+        $options = $this->generateOptionsArray();
+        update_option(self::OPTIONS_NAME, $options);
     }
 
     public function isStopReg() {

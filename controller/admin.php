@@ -7,6 +7,8 @@ class Mf100RegistrationAdmin extends Mf100RegistrationCore {
         add_action('admin_menu', array($this, 'addOptionsPage'));
         add_action('admin_init', array($this, 'initOptions'));
         add_action('admin_enqueue_scripts', array($this, 'addUsersMenuPageScripts'));
+
+        add_action('wp_ajax_mf100_update_field_visibility', array($this, 'updateVisibility'));
     }
 
 
@@ -49,7 +51,7 @@ class Mf100RegistrationAdmin extends Mf100RegistrationCore {
 
     public function parseOptions($rawOptions) {
         $options = Mf100Options::getInstance();
-        return $options->parseOptions($rawOptions);
+        return $options->parseOptionsPage($rawOptions);
     }
 
     public function addUsersMenuPage() {
@@ -66,8 +68,9 @@ class Mf100RegistrationAdmin extends Mf100RegistrationCore {
 
     public function showUsersMenuPage() {
         $years = $this->getRegistrationYears();
+        $fields = $this->getAvailableUserMeta();
 
-        $this->showTemplate('users-page', array('years' => $years));
+        $this->showTemplate('users-page', array('years' => $years, 'fields' => $fields));
     }
 
     public function showOptionsPage() {
@@ -99,6 +102,22 @@ class Mf100RegistrationAdmin extends Mf100RegistrationCore {
             Mf100Options::OPT_REG_LIMIT,
             (is_numeric($options->getRegLimit()) && 0 < $options->getRegLimit()) ? "" . $options->getRegLimit() : ''
         );
+    }
+
+
+    public function updateVisibility() {
+        $key = trim($_POST['field']);
+        $checked = ('true' === trim($_POST['checked']));
+
+        $userOptions = Mf100UserOptions::getInstance();
+        if ($checked) {
+            $userOptions->addVisibleField($key);
+        } else {
+            $userOptions->removeVisibleField($key);
+        }
+        $userOptions->storeOptions();
+
+        wp_die();
     }
 }
 
