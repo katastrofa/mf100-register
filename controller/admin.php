@@ -47,6 +47,14 @@ class Mf100RegistrationAdmin extends Mf100RegistrationCore {
             'mf100-options-page',
             'mf100-section'
         );
+
+        add_settings_field(
+            Mf100Options::OPT_FIO_TOKEN,
+            'Token pre ucet do FIO banky',
+            array($this, 'fioTokenCallback'),
+            'mf100-options-page',
+            'mf100-section'
+        );
     }
 
     public function parseOptions($rawOptions) {
@@ -96,11 +104,22 @@ class Mf100RegistrationAdmin extends Mf100RegistrationCore {
     public function regLimitCallback() {
         $options = Mf100Options::getInstance();
         printf(
-            '<input type="text" id="%s" name="%s[%s]" value="%s" class="small-text" />',
+            '<input type="text" id="%s" name="%s[%s]" value="%s" />',
             Mf100Options::OPT_REG_LIMIT,
             Mf100Options::OPTIONS_NAME,
             Mf100Options::OPT_REG_LIMIT,
             (is_numeric($options->getRegLimit()) && 0 < $options->getRegLimit()) ? "" . $options->getRegLimit() : ''
+        );
+    }
+
+    public function fioTokenCallback() {
+        $options = Mf100Options::getInstance();
+        printf(
+            '<input type="text" id="%s" name="%s[%s]" value="%s" class="small-text" />',
+            Mf100Options::OPT_FIO_TOKEN,
+            Mf100Options::OPTIONS_NAME,
+            Mf100Options::OPT_FIO_TOKEN,
+            (is_string($options->getFioToken())) ? $options->getFioToken() : ''
         );
     }
 

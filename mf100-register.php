@@ -17,6 +17,10 @@ if (is_admin()) {
 
     require(dirname(__FILE__) . '/model/Mf100UserOptions.php');
 	require(dirname(__FILE__) . '/controller/admin.php');
+
+    require(dirname(__FILE__) . '/controller/BankAccount.php');
+    register_activation_hook(__FILE__, array( 'BankAccount', 'install' ));
+
 } else {
     require(dirname(__FILE__) . '/model/FormField.php');
     require(dirname(__FILE__) . '/model/InputField.php');

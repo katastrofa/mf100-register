@@ -4,6 +4,7 @@ class Mf100Options {
 
     const OPT_STOP_REG = 'stop-reg';
     const OPT_REG_LIMIT = 'reg-limit';
+    const OPT_FIO_TOKEN = 'fio-token';
 
     const OPTIONS_NAME = 'mf100_options';
 
@@ -11,6 +12,7 @@ class Mf100Options {
 
     private $stopReg = false;
     private $regLimit = false;
+    private $fioToken = false;
 
     public static function getInstance() {
         if (null == self::$INSTANCE) {
@@ -31,7 +33,8 @@ class Mf100Options {
     private function generateOptionsArray() {
         return array(
             self::OPT_STOP_REG => $this->stopReg,
-            self::OPT_REG_LIMIT => $this->regLimit
+            self::OPT_REG_LIMIT => $this->regLimit,
+            self::OPT_FIO_TOKEN => $this->fioToken
         );
     }
 
@@ -46,6 +49,7 @@ class Mf100Options {
         } else {
             $this->setRegLimit(false);
         }
+        $this->setFioToken($rawOptions[self::OPT_FIO_TOKEN]);
 
         return $this->generateOptionsArray();
     }
@@ -80,4 +84,15 @@ class Mf100Options {
         }
     }
 
+    public function getFioToken() {
+        return $this->fioToken;
+    }
+
+    public function setFioToken($fioToken) {
+        if (is_string($fioToken) && 0 < strlen(trim($fioToken))) {
+            $this->fioToken = $fioToken;
+        } else {
+            $this->fioToken = false;
+        }
+    }
 }
