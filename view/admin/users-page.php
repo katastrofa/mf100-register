@@ -14,6 +14,7 @@
         <?php foreach ($years as $year => $nothing) : ?>
             <a href="#" id="year-link-<?php echo $year; ?>" class="nav-tab"><?php echo $year; ?></a>
         <?php endforeach; ?>
+        <a href="#" id="year-link-unreg" class="nav-tab">Unregistered</a>
     </h2>
 
     <div class="year-wrapper">
@@ -23,6 +24,9 @@
             <?php $this->showTemplate('users-year', array('year' => $year, 'users' => $users, 'first' => $first, 'fields' => $fields)); ?>
             <?php $first = false; ?>
         <?php endforeach; ?>
+
+        <?php $users = $this->getUnregisteredUsers(); ?>
+        <?php $this->showTemplate('users-year', array('year' => 'unreg', 'users' => $users, 'first' => $first, 'fields' => $fields)); ?>
     </div>
 
 </div>

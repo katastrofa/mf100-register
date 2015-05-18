@@ -1,5 +1,11 @@
 <tr id="user-<?php echo $user->ID; ?>"<?php echo ($alternate) ? ' class="alternate"' : ''; ?>>
-    <td><?php echo $user->last_name . ' ' . $user->first_name; ?></td>
+    <td>
+        <strong><a href="#" class="edit"><?php echo $user->last_name . ' ' . $user->first_name; ?></a></strong>
+        <div class="row-actions">
+            <span class="edit"><a href="#" class="edit">Edit</a> | </span>
+            <span class="delete"><a href="#" class="delete">Unregister</a></span>
+        </div>
+    </td>
     <td><?php echo $user->data->user_email; ?></td>
     <?php $userOptions = Mf100UserOptions::getInstance(); ?>
     <?php foreach ($fields as $value) : ?>

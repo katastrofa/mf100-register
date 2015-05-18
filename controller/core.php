@@ -93,6 +93,13 @@ class Mf100RegistrationCore {
         return $users;
     }
 
+    protected function getUnregisteredUsers() {
+        global $wpdb;
+
+        /// TODO: Finish this method
+        return array();
+    }
+
     protected function prepareMeta($meta) {
         $newMeta = array();
         foreach ($meta as $key => $value) {
