@@ -35,6 +35,14 @@ class Mf100RegistrationCore {
         delete_user_meta($user->ID, self::REG_KEY . '_' . $year);
     }
 
+    protected function userPaymentValidated($user, $year) {
+        update_user_meta($user->ID, self::REG_KEY . '_' . $year . '_pay', 'yes');
+    }
+
+    protected function deleteUserPayment($user, $year) {
+        delete_user_meta($user->ID, self::REG_KEY . '_' . $year . '_pay');
+    }
+
     protected function getRegistrationYears() {
         global $wpdb;
 

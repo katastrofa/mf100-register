@@ -5,6 +5,7 @@ class Mf100Options {
     const OPT_STOP_REG = 'stop-reg';
     const OPT_REG_LIMIT = 'reg-limit';
     const OPT_FIO_TOKEN = 'fio-token';
+    const OPT_MATCHING_YEAR = 'matching-year';
 
     const OPTIONS_NAME = 'mf100_options';
 
@@ -13,6 +14,7 @@ class Mf100Options {
     private $stopReg = false;
     private $regLimit = false;
     private $fioToken = false;
+    private $matchingYear = '';
 
     public static function getInstance() {
         if (null == self::$INSTANCE) {
@@ -34,7 +36,8 @@ class Mf100Options {
         return array(
             self::OPT_STOP_REG => $this->stopReg,
             self::OPT_REG_LIMIT => $this->regLimit,
-            self::OPT_FIO_TOKEN => $this->fioToken
+            self::OPT_FIO_TOKEN => $this->fioToken,
+            self::OPT_MATCHING_YEAR => $this->matchingYear
         );
     }
 
@@ -50,6 +53,7 @@ class Mf100Options {
             $this->setRegLimit(false);
         }
         $this->setFioToken($rawOptions[self::OPT_FIO_TOKEN]);
+        $this->setMatchingYear($rawOptions[self::OPT_MATCHING_YEAR]);
 
         return $this->generateOptionsArray();
     }
@@ -93,6 +97,18 @@ class Mf100Options {
             $this->fioToken = $fioToken;
         } else {
             $this->fioToken = false;
+        }
+    }
+
+    public function getMatchingYear() {
+        return $this->matchingYear;
+    }
+
+    public function setMatchingYear($matchingYear) {
+        if (is_string($matchingYear)) {
+            $this->matchingYear = trim($matchingYear);
+        } else {
+            $this->matchingYear = '';
         }
     }
 }

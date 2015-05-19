@@ -77,6 +77,22 @@ class Transaction {
     }
 
 
+    public function getParsedComment() {
+        $parts = preg_replace('/[^a-zA-Z0-9]/i', ' ', strtolower(trim(remove_accents($this->data['komentar']))));
+        $parts = array_map('trim', array_filter(explode(' ', $parts)));
+
+        $return = array('birth' => 0, 'name' => array());
+        foreach ($parts as $part) {
+            if (is_numeric($part)) {
+                $return['birth'] = intval($part);
+            } else {
+                $return['name'][] = trim($part);
+            }
+        }
+
+        return $return;
+    }
+
     public function getId() {
         return $this->id;
     }

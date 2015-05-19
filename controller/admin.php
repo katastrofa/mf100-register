@@ -3,7 +3,7 @@
 class Mf100RegistrationAdmin extends Mf100RegistrationCore {
 
     public function __construct() {
-        add_action('admin_menu', array($this, 'addUsersMenuPage'));
+        add_action('admin_menu', array($this, 'addUsersMenuPages'));
         add_action('admin_menu', array($this, 'addOptionsPage'));
         add_action('admin_init', array($this, 'initOptions'));
         add_action('admin_enqueue_scripts', array($this, 'addUsersMenuPageScripts'));
@@ -55,6 +55,14 @@ class Mf100RegistrationAdmin extends Mf100RegistrationCore {
             'mf100-options-page',
             'mf100-section'
         );
+
+        add_settings_field(
+            Mf100Options::OPT_MATCHING_YEAR,
+            'Rok podujatia pre ktory treba parovat platby',
+            array($this, 'matchingYearCallback'),
+            'mf100-options-page',
+            'mf100-section'
+        );
     }
 
     public function parseOptions($rawOptions) {
@@ -62,8 +70,15 @@ class Mf100RegistrationAdmin extends Mf100RegistrationCore {
         return $options->parseOptionsPage($rawOptions);
     }
 
-    public function addUsersMenuPage() {
+    public function addUsersMenuPages() {
         add_users_page('MF100', 'MF100', 'activate_plugins', 'mf100', array($this, 'showUsersMenuPage'));
+        add_users_page(
+            'MF100 Transactions',
+            'MF100 Transactions',
+            'activate_plugins',
+            'mf100-transactions',
+            array($this, 'showTransactionMenuPage')
+        );
     }
 
     public function addUsersMenuPageScripts($hook) {
@@ -79,6 +94,13 @@ class Mf100RegistrationAdmin extends Mf100RegistrationCore {
         $fields = $this->getAvailableUserMeta();
 
         $this->showTemplate('users-page', array('years' => $years, 'fields' => $fields));
+    }
+
+    public function showTransactionMenuPage() {
+        $objBankAccount = new BankAccount();
+        $transactions = $objBankAccount->getTransactions();
+
+        $this->showTemplate('transaction-page', array('transactions' => $transactions));
     }
 
     public function showOptionsPage() {
@@ -104,7 +126,7 @@ class Mf100RegistrationAdmin extends Mf100RegistrationCore {
     public function regLimitCallback() {
         $options = Mf100Options::getInstance();
         printf(
-            '<input type="text" id="%s" name="%s[%s]" value="%s" />',
+            '<input type="text" id="%s" name="%s[%s]" value="%s" class="small-text" />',
             Mf100Options::OPT_REG_LIMIT,
             Mf100Options::OPTIONS_NAME,
             Mf100Options::OPT_REG_LIMIT,
@@ -115,11 +137,22 @@ class Mf100RegistrationAdmin extends Mf100RegistrationCore {
     public function fioTokenCallback() {
         $options = Mf100Options::getInstance();
         printf(
-            '<input type="text" id="%s" name="%s[%s]" value="%s" class="small-text" />',
+            '<input type="text" id="%s" name="%s[%s]" value="%s" class="regular-text code" />',
             Mf100Options::OPT_FIO_TOKEN,
             Mf100Options::OPTIONS_NAME,
             Mf100Options::OPT_FIO_TOKEN,
             (is_string($options->getFioToken())) ? $options->getFioToken() : ''
+        );
+    }
+
+    public function matchingYearCallback() {
+        $options = Mf100Options::getInstance();
+        printf(
+            '<input type="text" id="%s" name="%s[%s]" value="%s" class="small-text" />',
+            Mf100Options::OPT_MATCHING_YEAR,
+            Mf100Options::OPTIONS_NAME,
+            Mf100Options::OPT_MATCHING_YEAR,
+            $options->getMatchingYear()
         );
     }
 
