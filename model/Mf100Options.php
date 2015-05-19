@@ -24,11 +24,19 @@ class Mf100Options {
     }
 
     private function __construct($options) {
-        if (is_array($options) && isset($options[self::OPT_STOP_REG])) {
-            $this->stopReg = $options[self::OPT_STOP_REG];
-        }
-        if (is_array($options) && isset($options[self::OPT_STOP_REG])) {
-            $this->regLimit = $options[self::OPT_REG_LIMIT];
+        if (is_array($options)) {
+            if (isset($options[self::OPT_STOP_REG])) {
+                $this->stopReg = $options[self::OPT_STOP_REG];
+            }
+            if (isset($options[self::OPT_REG_LIMIT])) {
+                $this->regLimit = $options[self::OPT_REG_LIMIT];
+            }
+            if (isset($options[self::OPT_FIO_TOKEN])) {
+                $this->fioToken = $options[self::OPT_FIO_TOKEN];
+            }
+            if (isset($options[self::OPT_MATCHING_YEAR])) {
+                $this->matchingYear = $options[self::OPT_MATCHING_YEAR];
+            }
         }
     }
 

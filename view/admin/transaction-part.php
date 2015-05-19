@@ -1,4 +1,4 @@
-<div class="mf100-reg-table-wrap" id="year-<?php echo $part; ?>"<?php echo (!$first) ? ' style="display: none;"' : ''; ?>>
+<div class="mf100-transactions-table-wrap" id="transaction-<?php echo $part; ?>"<?php echo (!$first) ? ' style="display: none;"' : ''; ?>>
     <table class="wp-list-table widefat fixed users">
         <thead>
         <tr>
@@ -27,7 +27,7 @@
         <?php $alternate = false; ?>
         <?php foreach ($transactions as $transaction) : ?>
             <?php $alternate = $alternate xor true; ?>
-            <?php $this->showTemplate('user-line', array('transaction' => $transaction, 'alternate' => $alternate)); ?>
+            <?php $this->showTemplate('transaction-line', array('transaction' => $transaction, 'alternate' => $alternate)); ?>
         <?php endforeach; ?>
         </tbody>
 

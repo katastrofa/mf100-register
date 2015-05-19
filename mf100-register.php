@@ -11,6 +11,7 @@ define('MF100_BASE_PATH', dirname(__FILE__));
 
 require(dirname(__FILE__) . '/model/Mf100Options.php');
 require(dirname(__FILE__) . '/controller/core.php');
+require(dirname(__FILE__) . '/model/Transaction.php');
 require(dirname(__FILE__) . '/controller/Mf100Transactions.php');
 
 Mf100RegistrationCore::activateCrons();

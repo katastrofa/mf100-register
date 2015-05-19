@@ -22,6 +22,7 @@ class Mf100RegistrationCore {
     const YEAR_FIELD = 'rocnik';
     const FIRST_NAME_FIELD = 'first_name';
     const LAST_NAME_FIELD = 'last_name';
+	const BIRTH_FIELD = 'narodeny';
 
     const META_KEY_PREFIX = 'mf100-';
     const REG_KEY = 'mf100';

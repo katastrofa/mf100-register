@@ -3,7 +3,7 @@
 class Mf100RegistrationAdmin extends Mf100RegistrationCore {
 
     public function __construct() {
-        if (isset($_POST['mf100-manual-transaction-checker']) && 'yes' == $_POST['mf100-manual-transaction-checker']) {
+        if (isset($_POST['mf100-manual-transaction-checker'])) {
             add_action('plugins_loaded', array($this, 'processTransactions'));
         }
 
@@ -94,6 +94,10 @@ class Mf100RegistrationAdmin extends Mf100RegistrationCore {
         if ('users_page_mf100' == $hook) {
             wp_register_script('mf100-admin-script', MF100_BASE_LINK . 'js/admin.js', array('jquery'), '0.1', true);
             wp_enqueue_script('mf100-admin-script');
+        }
+        if ('users_page_mf100-transactions' == $hook) {
+            wp_register_script('mf100-transactions-script', MF100_BASE_LINK . 'js/transactions.js', array('jquery'), '0.1', true);
+            wp_enqueue_script('mf100-transactions-script');
         }
     }
 

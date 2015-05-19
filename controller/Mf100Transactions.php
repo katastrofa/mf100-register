@@ -6,7 +6,7 @@ class Mf100Transactions extends Mf100RegistrationCore {
 
     public static function init() {
         global $wpdb;
-        self::$TABLE = $wpdb->prefix . 'mf100-bank-transactions';
+        self::$TABLE = $wpdb->prefix . 'mf100_bank_transactions';
     }
 
     public static function install() {
@@ -14,7 +14,7 @@ class Mf100Transactions extends Mf100RegistrationCore {
 
         $create =
             "CREATE TABLE IF NOT EXISTS `" . self::$TABLE . "` (
-                `id` INT NOT NULL,
+                `id` VARCHAR(20) NOT NULL,
                 `amount` INT NOT NULL,
                 `date` DATETIME NOT NULL,
                 `user` INT,
@@ -49,7 +49,7 @@ class Mf100Transactions extends Mf100RegistrationCore {
         global $wpdb;
 
         $select =
-            "SELECT FROM `" . self::$TABLE . "` WHERE
+            "SELECT * FROM `" . self::$TABLE . "` WHERE
                 `date` >= '{$from}' AND
                 `date` <= '{$to}'";
         $rawTransactions = $wpdb->get_results($select);
@@ -88,6 +88,7 @@ class Mf100Transactions extends Mf100RegistrationCore {
         $session = curl_init();
         curl_setopt($session, CURLOPT_URL, $url);
         curl_setopt($session, CURLOPT_HTTPGET, true);
+        curl_setopt($session, CURLOPT_RETURNTRANSFER, true);
         $output = curl_exec($session);
         curl_close($session);
 
@@ -113,12 +114,13 @@ class Mf100Transactions extends Mf100RegistrationCore {
     }
 
     private function tryToMatchUser($transactionData, $user) {
-        if ($transactionData['birth'] != $user->narodenie) {
+        $field = self::BIRTH_FIELD;
+	    if ($transactionData['birth'] != $user->$field) {
             return false;
         }
 
         foreach ($transactionData['name'] as $namePart) {
-            if ($namePart != $user->first_name || $namePart != $user->last_name) {
+            if ($namePart != $user->first_name && $namePart != $user->last_name) {
                 return false;
             }
         }
@@ -136,7 +138,7 @@ class Mf100Transactions extends Mf100RegistrationCore {
                 $transactionData = $transaction->getParsedComment();
                 foreach ($users as $user) {
                     if ($this->tryToMatchUser($transactionData, $user)) {
-                        $transaction->user = $user->ID;
+                        $transaction->setUser($user->ID);
                         $transaction->save();
                         $this->userPaymentValidated($user, $year);
                     }
@@ -148,8 +150,8 @@ class Mf100Transactions extends Mf100RegistrationCore {
     public function updateBankMatchings() {
         $options = Mf100Options::getInstance();
         if ($options->getFioToken() && $options->getMatchingYear()) {
-            $from = date('Y-m-d H:i:s');
-            $to = date('Y-m-d H:i:s', time() - 604800);
+            $to = date('Y-m-d H:i:s');
+            $from = date('Y-m-d H:i:s', time() - 604800);
 
             $this->updateBankTransactionsFromApi($from, $to, $options->getFioToken());
             $this->matchTransactions($from, $to, $options->getMatchingYear());

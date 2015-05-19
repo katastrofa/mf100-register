@@ -12,13 +12,13 @@ class Transaction {
 
     public function __construct($data, $isJson = true) {
         if ($isJson) {
-            $this->id = $data->column22->value;
+            $this->id = "" . $data->column22->value;
             $this->amount = $data->column1->value;
             $this->date = $this->parseDate($data->column0->value);
             $this->user = null;
             $this->data = $this->parseData($data);
         } else {
-            $this->id = intval($data->id);
+            $this->id = $data->id;
             $this->amount = intval($data->amount);
             $this->date = $data->date;
             $this->user = ($data->user) ? intval($data->user) : null;
@@ -46,7 +46,7 @@ class Transaction {
     public function save() {
         global $wpdb;
 
-        $exists = intval($wpdb->get_var("SELECT COUNT(*) FROM `" . Mf100Transactions::$TABLE . "` WHERE `id` = {$this->id}"));
+        $exists = intval($wpdb->get_var("SELECT COUNT(*) FROM `" . Mf100Transactions::$TABLE . "` WHERE `id` = '{$this->id}'"));
         $data = $wpdb->escape(serialize($this->data));
         $user = ($this->user) ? $this->user : 'NULL';
 
@@ -60,16 +60,16 @@ class Transaction {
                         `user`={$user},
                         `data`='{$data}'
                     WHERE
-                        `id`={$this->id}";
+                        `id`='{$this->id}'";
         } else {
             /// Insert new record
             $query =
                 "INSERT INTO `" . Mf100Transactions::$TABLE . "` VALUE (
-                    {$this->id},
+                    '{$this->id}',
                     {$this->amount},
                     '{$this->date}',
-                    {$this->user},
-                    '{$this->data}'
+                    {$user},
+                    '{$data}'
                 )";
         }
 
