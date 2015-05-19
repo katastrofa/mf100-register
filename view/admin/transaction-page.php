@@ -1,4 +1,9 @@
 <div class="wrap">
+    <div class="manual-button">
+        <form action="" method="post">
+            <input type="submit" name="mf100-manual-transaction-checker" value="yes" />
+        </form>
+    </div>
     <h2 class="nav-tab-wrapper" id="mf100-nav-tabs">
         <a href="#" id="year-link-unmatched" class="nav-tab">Unmatched</a>
         <a href="#" id="year-link-matched" class="nav-tab">Matched</a>

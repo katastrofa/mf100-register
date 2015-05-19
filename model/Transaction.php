@@ -46,14 +46,14 @@ class Transaction {
     public function save() {
         global $wpdb;
 
-        $exists = intval($wpdb->get_var("SELECT COUNT(*) FROM `" . BankAccount::$TABLE . "` WHERE `id` = {$this->id}"));
+        $exists = intval($wpdb->get_var("SELECT COUNT(*) FROM `" . Mf100Transactions::$TABLE . "` WHERE `id` = {$this->id}"));
         $data = $wpdb->escape(serialize($this->data));
         $user = ($this->user) ? $this->user : 'NULL';
 
         if ($exists > 0) {
             /// Update the record
             $query =
-                "UPDATE `" . BankAccount::$TABLE . "`
+                "UPDATE `" . Mf100Transactions::$TABLE . "`
                     SET
                         `amount`={$this->amount},
                         `date`='{$this->date}',
@@ -64,7 +64,7 @@ class Transaction {
         } else {
             /// Insert new record
             $query =
-                "INSERT INTO `" . BankAccount::$TABLE . "` VALUE (
+                "INSERT INTO `" . Mf100Transactions::$TABLE . "` VALUE (
                     {$this->id},
                     {$this->amount},
                     '{$this->date}',

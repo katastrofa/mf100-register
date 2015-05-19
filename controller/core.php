@@ -26,6 +26,19 @@ class Mf100RegistrationCore {
     const META_KEY_PREFIX = 'mf100-';
     const REG_KEY = 'mf100';
 
+    const CRON_TRANSACTIONS = 'mf100transactionscronaction';
+
+
+    public static function activateCrons() {
+        if (!wp_next_scheduled(self::CRON_TRANSACTIONS)) {
+            wp_schedule_event(time(), 'hourly', self::CRON_TRANSACTIONS);
+        }
+    }
+
+    public static function deactivateCrons() {
+        wp_clear_scheduled_hook(self::CRON_TRANSACTIONS);
+    }
+
 
     protected function registerUser($user, $year, $race) {
         update_user_meta($user->ID, self::REG_KEY . '_' . $year, $race);

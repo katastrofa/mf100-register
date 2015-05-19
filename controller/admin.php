@@ -3,6 +3,10 @@
 class Mf100RegistrationAdmin extends Mf100RegistrationCore {
 
     public function __construct() {
+        if (isset($_POST['mf100-manual-transaction-checker']) && 'yes' == $_POST['mf100-manual-transaction-checker']) {
+            add_action('plugins_loaded', array($this, 'processTransactions'));
+        }
+
         add_action('admin_menu', array($this, 'addUsersMenuPages'));
         add_action('admin_menu', array($this, 'addOptionsPage'));
         add_action('admin_init', array($this, 'initOptions'));
@@ -11,6 +15,11 @@ class Mf100RegistrationAdmin extends Mf100RegistrationCore {
         add_action('wp_ajax_mf100_update_field_visibility', array($this, 'updateVisibility'));
     }
 
+
+    public function processTransactions() {
+        global $objMf100Transactions;
+        $objMf100Transactions->updateBankMatchings();
+    }
 
     public function addOptionsPage() {
         add_options_page(
@@ -97,8 +106,8 @@ class Mf100RegistrationAdmin extends Mf100RegistrationCore {
     }
 
     public function showTransactionMenuPage() {
-        $objBankAccount = new BankAccount();
-        $transactions = $objBankAccount->getTransactions();
+        global $objMf100Transactions;
+        $transactions = $objMf100Transactions->getTransactions();
 
         $this->showTemplate('transaction-page', array('transactions' => $transactions));
     }

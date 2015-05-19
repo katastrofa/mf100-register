@@ -1,6 +1,6 @@
 <?php
 
-class BankAccount extends Mf100RegistrationCore {
+class Mf100Transactions extends Mf100RegistrationCore {
 
     public static $TABLE = '';
 
@@ -25,6 +25,12 @@ class BankAccount extends Mf100RegistrationCore {
 
         $wpdb->query($create);
     }
+
+
+    public function __construct() {
+        add_action(self::CRON_TRANSACTIONS, array($this, 'updateBankMatchings'));
+    }
+
 
     private function parseJson($json) {
         $objData = json_decode($json);
@@ -151,4 +157,5 @@ class BankAccount extends Mf100RegistrationCore {
     }
 }
 
-BankAccount::init();
+Mf100Transactions::init();
+$objMf100Transactions = new Mf100Transactions();
