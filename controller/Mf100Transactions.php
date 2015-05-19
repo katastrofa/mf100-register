@@ -78,8 +78,7 @@ class Mf100Transactions extends Mf100RegistrationCore {
     private function generateLink($from, $to, $token) {
         $from = substr($from, 0, 10);
         $to = substr($to, 0, 10);
-        //$link = "https://www.fio.sk/ib_api/rest/periods/{$token}/{$from}/{$to}/transactions.json";
-        $link = 'http://localhost:8081/test.php';
+        $link = "https://www.fio.sk/ib_api/rest/periods/{$token}/{$from}/{$to}/transactions.json";
 
         return $link;
     }
