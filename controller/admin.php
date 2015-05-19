@@ -3,7 +3,11 @@
 class Mf100RegistrationAdmin extends Mf100RegistrationCore {
 
     public function __construct() {
-        add_action('admin_menu', array($this, 'addUsersMenuPage'));
+        if (isset($_POST['mf100-manual-transaction-checker'])) {
+            add_action('plugins_loaded', array($this, 'processTransactions'));
+        }
+
+        add_action('admin_menu', array($this, 'addUsersMenuPages'));
         add_action('admin_menu', array($this, 'addOptionsPage'));
         add_action('admin_init', array($this, 'initOptions'));
         add_action('admin_enqueue_scripts', array($this, 'addUsersMenuPageScripts'));
@@ -11,6 +15,11 @@ class Mf100RegistrationAdmin extends Mf100RegistrationCore {
         add_action('wp_ajax_mf100_update_field_visibility', array($this, 'updateVisibility'));
     }
 
+
+    public function processTransactions() {
+        global $objMf100Transactions;
+        $objMf100Transactions->updateBankMatchings();
+    }
 
     public function addOptionsPage() {
         add_options_page(
@@ -47,6 +56,22 @@ class Mf100RegistrationAdmin extends Mf100RegistrationCore {
             'mf100-options-page',
             'mf100-section'
         );
+
+        add_settings_field(
+            Mf100Options::OPT_FIO_TOKEN,
+            'Token pre ucet do FIO banky',
+            array($this, 'fioTokenCallback'),
+            'mf100-options-page',
+            'mf100-section'
+        );
+
+        add_settings_field(
+            Mf100Options::OPT_MATCHING_YEAR,
+            'Rok podujatia pre ktory treba parovat platby',
+            array($this, 'matchingYearCallback'),
+            'mf100-options-page',
+            'mf100-section'
+        );
     }
 
     public function parseOptions($rawOptions) {
@@ -54,14 +79,25 @@ class Mf100RegistrationAdmin extends Mf100RegistrationCore {
         return $options->parseOptionsPage($rawOptions);
     }
 
-    public function addUsersMenuPage() {
+    public function addUsersMenuPages() {
         add_users_page('MF100', 'MF100', 'activate_plugins', 'mf100', array($this, 'showUsersMenuPage'));
+        add_users_page(
+            'MF100 Transactions',
+            'MF100 Transactions',
+            'activate_plugins',
+            'mf100-transactions',
+            array($this, 'showTransactionMenuPage')
+        );
     }
 
     public function addUsersMenuPageScripts($hook) {
         if ('users_page_mf100' == $hook) {
             wp_register_script('mf100-admin-script', MF100_BASE_LINK . 'js/admin.js', array('jquery'), '0.1', true);
             wp_enqueue_script('mf100-admin-script');
+        }
+        if ('users_page_mf100-transactions' == $hook) {
+            wp_register_script('mf100-transactions-script', MF100_BASE_LINK . 'js/transactions.js', array('jquery'), '0.1', true);
+            wp_enqueue_script('mf100-transactions-script');
         }
     }
 
@@ -71,6 +107,13 @@ class Mf100RegistrationAdmin extends Mf100RegistrationCore {
         $fields = $this->getAvailableUserMeta();
 
         $this->showTemplate('users-page', array('years' => $years, 'fields' => $fields));
+    }
+
+    public function showTransactionMenuPage() {
+        global $objMf100Transactions;
+        $transactions = $objMf100Transactions->getTransactions();
+
+        $this->showTemplate('transaction-page', array('transactions' => $transactions));
     }
 
     public function showOptionsPage() {
@@ -101,6 +144,28 @@ class Mf100RegistrationAdmin extends Mf100RegistrationCore {
             Mf100Options::OPTIONS_NAME,
             Mf100Options::OPT_REG_LIMIT,
             (is_numeric($options->getRegLimit()) && 0 < $options->getRegLimit()) ? "" . $options->getRegLimit() : ''
+        );
+    }
+
+    public function fioTokenCallback() {
+        $options = Mf100Options::getInstance();
+        printf(
+            '<input type="text" id="%s" name="%s[%s]" value="%s" class="regular-text code" />',
+            Mf100Options::OPT_FIO_TOKEN,
+            Mf100Options::OPTIONS_NAME,
+            Mf100Options::OPT_FIO_TOKEN,
+            (is_string($options->getFioToken())) ? $options->getFioToken() : ''
+        );
+    }
+
+    public function matchingYearCallback() {
+        $options = Mf100Options::getInstance();
+        printf(
+            '<input type="text" id="%s" name="%s[%s]" value="%s" class="small-text" />',
+            Mf100Options::OPT_MATCHING_YEAR,
+            Mf100Options::OPTIONS_NAME,
+            Mf100Options::OPT_MATCHING_YEAR,
+            $options->getMatchingYear()
         );
     }
 
