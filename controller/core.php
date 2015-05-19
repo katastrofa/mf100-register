@@ -93,11 +93,24 @@ class Mf100RegistrationCore {
         return $users;
     }
 
-    protected function getUnregisteredUsers() {
+    protected function getUnregisteredUsers($year) {
         global $wpdb;
 
         /// TODO: Finish this method
-        return array();
+        $select =
+            "SELECT * FROM `{$wpdb->prefix}users` AS `u`
+                LEFT JOIN (SELECT DISTINCT `user_id` FROM `{$wpdb->prefix}usermeta` WHERE `meta_key` = '" . self::REG_KEY . "_{$year}') AS `m`
+                    ON `u`.`ID` = `m`.`user_id`
+                WHERE `m`.`user_id` IS NULL";
+        $rawUsers = $wpdb->get_results($select);
+
+        $users = array();
+        foreach ($rawUsers as $user) {
+            $wpUser = new WP_User($user);
+            $users[] = $wpUser;
+        }
+
+        return $users;
     }
 
     protected function prepareMeta($meta) {
