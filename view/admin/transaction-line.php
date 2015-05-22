@@ -15,4 +15,5 @@
     <td><?php echo $data['mena']; ?></td>
     <td><?php echo $data['uzivatel']; ?></td>
     <td><?php echo $data['komentar']; ?></td>
+    <td><?php echo $data['sprava']; ?></td>
 </tr>
