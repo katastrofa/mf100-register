@@ -40,7 +40,7 @@ class Transaction {
         $data['mena'] = $jsonData->column14->value;
         $data['uzivatel'] = $jsonData->column7->value;
         $data['komentar'] = $jsonData->column25->value;
-        $data['sprava'] = $jsonData->column16->value;
+        $data['sprava'] = preg_replace("/\\/[A-Z0-9-]+\\/SP/i", '', $jsonData->column16->value);
         return $data;
     }
 
@@ -91,6 +91,7 @@ class Transaction {
             }
         }
 
+        $return['name'] = array_unique($return['name']);
         return $return;
     }
 
