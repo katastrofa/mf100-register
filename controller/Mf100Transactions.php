@@ -114,7 +114,7 @@ class Mf100Transactions extends Mf100RegistrationCore {
 
     private function tryToMatchUser($transactionData, $user) {
         $field = self::BIRTH_FIELD;
-	    if ($transactionData['birth'] != $user->$field) {
+	    if (!$transactionData['birth'] || !isset($user->$field) || $transactionData['birth'] != $user->$field) {
             return false;
         }
 

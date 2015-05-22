@@ -6,12 +6,14 @@
 		} else {
 			$user = '';
 		}
+		$data = $transaction->getData();
 	?>
     <td><?php echo $transaction->getId(); ?></td>
     <td><?php echo $user; ?></td>
     <td><?php echo $transaction->getDate(); ?></td>
     <td><?php echo $transaction->getAmount(); ?></td>
-    <td><?php echo $transaction->getData()['mena']; ?></td>
-    <td><?php echo $transaction->getData()['uzivatel']; ?></td>
-    <td><?php echo $transaction->getData()['komentar']; ?></td>
+    <td><?php echo $data['mena']; ?></td>
+    <td><?php echo $data['uzivatel']; ?></td>
+    <td><?php echo $data['komentar']; ?></td>
+    <td><?php echo $data['sprava']; ?></td>
 </tr>
