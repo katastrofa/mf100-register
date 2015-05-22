@@ -9,6 +9,7 @@
             <th scope="col" id="mena" class="manage-column column-email sortable desc">Mena</th>
             <th scope="col" id="uzivatel" class="manage-column column-email sortable desc">Uzivatel</th>
             <th scope="col" id="komentar" class="manage-column column-email sortable desc">Komentar</th>
+            <th scope="col" id="sprava" class="manage-column column-email sortable desc">Sprava</th>
         </tr>
         </thead>
         <tfoot>
@@ -20,6 +21,7 @@
             <th scope="col" class="manage-column column-email sortable desc">Mena</th>
             <th scope="col" class="manage-column column-email sortable desc">Uzivatel</th>
             <th scope="col" class="manage-column column-email sortable desc">Komentar</th>
+            <th scope="col" class="manage-column column-email sortable desc">Sprava</th>
         </tr>
         </tfoot>
 
