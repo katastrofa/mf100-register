@@ -1,15 +1,12 @@
 <?php
 
-/// TODO: Protect registration form
-/// TODO: Unregister
-/// TODO: Show page options for backend
-
 
 
 class Mf100RegistrationFront extends Mf100RegistrationCore {
 
     private $FIELDS = array(
-        'trasa' => 'mf100_%year%'
+        'trasa' => 'mf100_%year%',
+        'platba' => 'mf100_%year%_pay'
     );
 
     private $objErrors = null;
@@ -255,7 +252,7 @@ class Mf100RegistrationFront extends Mf100RegistrationCore {
 ///==========================================================================================
 
     public function parseUserTemplateCallback($match) {
-        if (isset($this->FIELDS_MAP[$match[1]])) {
+        if (isset($this->FIELDS[$match[1]])) {
             $replaceField = str_replace('%year%', $this->tmpYear, $this->FIELDS[$match[1]]);
             return $this->tmpUser->$replaceField;
         } else {

@@ -22,9 +22,23 @@ class Mf100RegistrationCore {
     const YEAR_FIELD = 'rocnik';
     const FIRST_NAME_FIELD = 'first_name';
     const LAST_NAME_FIELD = 'last_name';
+	const BIRTH_FIELD = 'narodeny';
 
     const META_KEY_PREFIX = 'mf100-';
     const REG_KEY = 'mf100';
+
+    const CRON_TRANSACTIONS = 'mf100transactionscronaction';
+
+
+    public static function activateCrons() {
+        if (!wp_next_scheduled(self::CRON_TRANSACTIONS)) {
+            wp_schedule_event(time(), 'hourly', self::CRON_TRANSACTIONS);
+        }
+    }
+
+    public static function deactivateCrons() {
+        wp_clear_scheduled_hook(self::CRON_TRANSACTIONS);
+    }
 
 
     protected function registerUser($user, $year, $race) {
@@ -33,6 +47,14 @@ class Mf100RegistrationCore {
 
     protected function unregisterUser($user, $year) {
         delete_user_meta($user->ID, self::REG_KEY . '_' . $year);
+    }
+
+    protected function userPaymentValidated($user, $year) {
+        update_user_meta($user->ID, self::REG_KEY . '_' . $year . '_pay', 'yes');
+    }
+
+    protected function deleteUserPayment($user, $year) {
+        delete_user_meta($user->ID, self::REG_KEY . '_' . $year . '_pay');
     }
 
     protected function getRegistrationYears() {
