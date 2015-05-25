@@ -41,22 +41,6 @@ class Mf100RegistrationCore {
     }
 
 
-    protected function registerUser($user, $year, $race) {
-        update_user_meta($user->ID, self::REG_KEY . '_' . $year, $race);
-    }
-
-    protected function unregisterUser($user, $year) {
-        delete_user_meta($user->ID, self::REG_KEY . '_' . $year);
-    }
-
-    protected function userPaymentValidated($user, $year) {
-        update_user_meta($user->ID, self::REG_KEY . '_' . $year . '_pay', 'yes');
-    }
-
-    protected function deleteUserPayment($user, $year) {
-        delete_user_meta($user->ID, self::REG_KEY . '_' . $year . '_pay');
-    }
-
     protected function getRegistrationYears() {
         global $wpdb;
 
@@ -100,16 +84,15 @@ class Mf100RegistrationCore {
     }
 
     protected function getRegisteredUsers($year) {
-        $users = get_users(array(
+        $rawUsers = get_users(array(
             'meta_key' => self::REG_KEY . '_' . $year,
             'fields' => 'all_with_meta'
         ));
 
-        foreach ($users as &$user) {
-            $meta = $this->prepareMeta(get_user_meta($user->ID));
-            foreach ($meta as $key => $value) {
-                $user->$key = $value;
-            }
+        $users = array();
+        foreach ($rawUsers as $user) {
+            $wpUser = new Mf100User($user);
+            $users[$user->ID] = $wpUser;
         }
 
         return $users;
@@ -118,7 +101,6 @@ class Mf100RegistrationCore {
     protected function getUnregisteredUsers($year) {
         global $wpdb;
 
-        /// TODO: Finish this method
         $select =
             "SELECT * FROM `{$wpdb->prefix}users` AS `u`
                 LEFT JOIN (SELECT DISTINCT `user_id` FROM `{$wpdb->prefix}usermeta` WHERE `meta_key` = '" . self::REG_KEY . "_{$year}') AS `m`
@@ -128,36 +110,11 @@ class Mf100RegistrationCore {
 
         $users = array();
         foreach ($rawUsers as $user) {
-            $wpUser = new WP_User($user);
-            $users[] = $wpUser;
+            $wpUser = new Mf100User($user);
+            $users[$user->ID] = $wpUser;
         }
 
         return $users;
-    }
-
-    protected function prepareMeta($meta) {
-        $newMeta = array();
-        foreach ($meta as $key => $value) {
-            if (is_string($key) && self::META_KEY_PREFIX == substr($key, 0, strlen(self::META_KEY_PREFIX))) {
-                $key = substr($key, strlen(self::META_KEY_PREFIX));
-            }
-            if (!is_array($value[0]) && !is_object($value[0])) {
-                $newMeta[$key] = $value[0];
-            }
-        }
-        return $newMeta;
-    }
-
-    protected function getMf100Meta($idUser) {
-        $meta = get_user_meta($idUser);
-        $return = array();
-        foreach ($meta as $key => $value) {
-            if (is_string($key) && self::META_KEY_PREFIX == substr($key, 0, strlen(self::META_KEY_PREFIX))) {
-                $return[substr($key, strlen(self::META_KEY_PREFIX))] = $value[0];
-            }
-        }
-
-        return $return;
     }
 
     protected function getAvailableUserMeta() {

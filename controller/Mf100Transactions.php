@@ -139,7 +139,7 @@ class Mf100Transactions extends Mf100RegistrationCore {
                     if ($this->tryToMatchUser($transactionData, $user)) {
                         $transaction->setUser($user->ID);
                         $transaction->save();
-                        $this->userPaymentValidated($user, $year);
+                        $user->validatePayment($year);
                     }
                 }
             }

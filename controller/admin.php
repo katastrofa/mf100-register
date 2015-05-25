@@ -13,6 +13,8 @@ class Mf100RegistrationAdmin extends Mf100RegistrationCore {
         add_action('admin_enqueue_scripts', array($this, 'addUsersMenuPageScripts'));
 
         add_action('wp_ajax_mf100_update_field_visibility', array($this, 'updateVisibility'));
+        add_action('wp_ajax_mf100_toggle_register', array($this, 'toggleRegistration'));
+        add_action('wp_ajax_mf100_resend_register_email', array($this, 'resendRegistrationEmail'));
     }
 
 
@@ -92,7 +94,7 @@ class Mf100RegistrationAdmin extends Mf100RegistrationCore {
 
     public function addUsersMenuPageScripts($hook) {
         if ('users_page_mf100' == $hook) {
-            wp_register_script('mf100-admin-script', MF100_BASE_LINK . 'js/admin.js', array('jquery'), '0.1', true);
+            wp_register_script('mf100-admin-script', MF100_BASE_LINK . 'js/admin.js', array('jquery-ui-dialog'), '0.2.0.3', true);
             wp_enqueue_script('mf100-admin-script');
         }
         if ('users_page_mf100-transactions' == $hook) {
@@ -182,6 +184,39 @@ class Mf100RegistrationAdmin extends Mf100RegistrationCore {
         }
         $userOptions->storeOptions();
 
+        wp_die();
+    }
+
+    public function toggleRegistration() {
+        $year = trim($_POST['year']);
+        $race = trim($_POST['race']);
+        $user = intval(trim($_POST['user']));
+        $user = new Mf100User($user);
+
+        $user->toggleRegister($year, $race);
+        $fields = $this->getAvailableUserMeta();
+        $user = new Mf100User($user->ID);
+
+        $this->showTemplate(
+            'user-line',
+            array('user' => $user, 'alternate' => false, 'fields' => $fields, 'year' => $year)
+        );
+
+        wp_die();
+    }
+
+    public function resendRegistrationEmail() {
+        $user = intval(trim($_POST['user']));
+        $user_pass = wp_generate_password( 12, false );
+
+        wp_update_user(array(
+            'ID' => $user,
+            'user_pass' => $user_pass
+        ));
+
+        wp_new_user_notification( $user, $user_pass );
+
+        echo 'sent';
         wp_die();
     }
 }

@@ -142,8 +142,8 @@ class Mf100RegistrationFront extends Mf100RegistrationCore {
                 }
             }
 
-            $meta = get_user_meta($user->ID);
-            $this->filledValues = array_merge($this->filledValues, $this->prepareMeta($meta));
+            $meta = Mf100User::getMf100Meta($user->ID);
+            $this->filledValues = array_merge($this->filledValues, $meta);
         }
 
         $options = Mf100Options::getInstance();
@@ -169,25 +169,6 @@ class Mf100RegistrationFront extends Mf100RegistrationCore {
 ///==========================================================================================
 /// Sign up
 ///==========================================================================================
-
-	protected function updateUserMeta($user) {
-        $aValues = $_POST;
-        unset($aValues['user_email'], $aValues['rocnik'], $aValues['mf100-reg']);
-
-        foreach ($aValues as $key => $value) {
-            if ($key == self::FIRST_NAME_FIELD || $key == self::LAST_NAME_FIELD) {
-                update_user_meta($user->ID, $key, $value);
-            } else {
-                update_user_meta($user->ID, self::META_KEY_PREFIX . $key, $value);
-            }
-        }
-
-        $storedMeta = $this->getMf100Meta($user->ID);
-        $metaToRemove = array_diff_key($storedMeta, $aValues);
-        foreach ($metaToRemove as $key => $value) {
-            delete_user_meta($user->ID, self::META_KEY_PREFIX . $key);
-        }
-	}
 
     protected function validateRequiredFields() {
         $aPosted = $_POST;
@@ -228,12 +209,17 @@ class Mf100RegistrationFront extends Mf100RegistrationCore {
                 if (!is_wp_error($idUser) || $bUserRegistered) {
                     if ($bUserRegistered) {
                         $user = get_user_by('email', $email);
+                        $user = new Mf100User($user);
                     } else {
-                        $user = get_user_by('id', $idUser);
+                        $user = new Mf100User($idUser);
                     }
 
-                    $this->registerUser($user, $year, $race);
-                    $this->updateUserMeta($user);
+                    $user->register($year, $race);
+
+                    $aValues = $_POST;
+                    unset($aValues['user_email'], $aValues['rocnik'], $aValues['mf100-reg']);
+                    $user->mf100Update($aValues);
+
                     $this->bUserRegistered = true;
                     $this->objRegisteredUser = $user;
 
