@@ -83,7 +83,39 @@ class Mf100RegistrationCore {
         return false;
     }
 
-    protected function getRegisteredUsers($year) {
+    protected function sortUsers(&$users, $sortby, $order) {
+        if (!$sortby && 'DESC' == $order) {
+            $users = array_reverse($users, true);
+        } else if (!$sortby) {
+            /// do nothing
+        } else {
+            $function = function($userA, $userB) use ($sortby, $order) {
+                if (is_numeric($userA->$sortby)) {
+                    $cmp = function($a, $b) use ($order) {
+                        if ('ASC' == $order) {
+                            return $a - $b;
+                        } else {
+                            return $b - $a;
+                        }
+                    };
+                } else {
+                    $cmp = function($a, $b) use ($order) {
+                        if ('ASC' == $order) {
+                            strcasecmp($a, $b);
+                        } else {
+                            strcasecmp($b, $a);
+                        }
+                    };
+                }
+
+                return $cmp($userA->$sortby, $userB->$sortby);
+            };
+
+            uasort($users, $function);
+        }
+    }
+
+    protected function getRegisteredUsers($year, $sortby = '', $order = 'ASC') {
         $rawUsers = get_users(array(
             'meta_key' => self::REG_KEY . '_' . $year,
             'fields' => 'all_with_meta'
@@ -95,10 +127,12 @@ class Mf100RegistrationCore {
             $users[$user->ID] = $wpUser;
         }
 
+        $this->sortUsers($users, $sortby, $order);
+
         return $users;
     }
 
-    protected function getUnregisteredUsers($year) {
+    protected function getUnregisteredUsers($year, $sortby = '', $order = 'ASC') {
         global $wpdb;
 
         $select =
@@ -113,6 +147,8 @@ class Mf100RegistrationCore {
             $wpUser = new Mf100User($user);
             $users[$user->ID] = $wpUser;
         }
+
+        $this->sortUsers($users, $sortby, $order);
 
         return $users;
     }

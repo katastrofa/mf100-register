@@ -19,10 +19,10 @@
     <div class="year-wrapper">
         <?php $first = true; ?>
         <?php foreach ($years as $year => $nothing) : ?>
-            <?php $users = $this->getRegisteredUsers($year); ?>
+            <?php $users = $this->getRegisteredUsers($year, 'last_name'); ?>
             <?php $this->showTemplate('users-year', array('year' => $year, 'users' => $users, 'first' => $first, 'fields' => $fields, 'reg' => true)); ?>
 
-            <?php $users = $this->getUnregisteredUsers($year); ?>
+            <?php $users = $this->getUnregisteredUsers($year, 'last_name'); ?>
             <?php $this->showTemplate('users-year', array('year' => $year, 'users' => $users, 'first' => $first, 'fields' => $fields, 'reg' => false)); ?>
 
             <?php $first = false; ?>
