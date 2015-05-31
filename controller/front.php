@@ -241,31 +241,38 @@ class Mf100RegistrationFront extends Mf100RegistrationCore {
         if (isset($this->FIELDS[$match[1]])) {
             $replaceField = str_replace('%year%', $this->tmpYear, $this->FIELDS[$match[1]]);
             return $this->tmpUser->$replaceField;
+        } else if ('order' == $match[1]) {
+            return "" . $this->tmpOrder;
         } else {
             $field = $match[1];
             return $this->tmpUser->$field;
         }
     }
 
-    protected function parseUserTemplate($user, $template, $year) {
+    protected function parseUserTemplate($user, $template, $year, $i) {
         $this->tmpYear = $year;
         $this->tmpUser = $user;
+        $this->tmpOrder = $i;
         $template = preg_replace_callback("/\\%([^%]+)\\%/iU", array($this, 'parseUserTemplateCallback'), $template);
         return $template;
     }
 
     public function showRegisteredUsers($atts, $content = '') {
-        if (isset($atts['rocnik'])) {
-            $year = intval($atts['rocnik']);
-            $users = $this->getRegisteredUsers($year);
-            $template = $content;
-            $content = '';
+        $atts = shortcode_atts(
+            array('rocnik' => date('Y'), 'sortby' => 'last_name', 'order' => 'ASC'),
+            $atts,
+            'mf100_list'
+        );
 
-            foreach ($users as $user) {
-                $content .= $this->parseUserTemplate($user, $template, $year);
-            }
-        } else {
-            $content = "<p>Treba definovat rocnik</p>";
+        $year = intval($atts['rocnik']);
+        $users = $this->getRegisteredUsers($year, $atts['sortby'], $atts['order']);
+        $template = $content;
+        $content = '';
+
+        $i = 0;
+        foreach ($users as $user) {
+            $i++;
+            $content .= $this->parseUserTemplate($user, $template, $year, $i);
         }
 
         return $content;
