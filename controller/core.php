@@ -41,22 +41,6 @@ class Mf100RegistrationCore {
     }
 
 
-    protected function registerUser($user, $year, $race) {
-        update_user_meta($user->ID, self::REG_KEY . '_' . $year, $race);
-    }
-
-    protected function unregisterUser($user, $year) {
-        delete_user_meta($user->ID, self::REG_KEY . '_' . $year);
-    }
-
-    protected function userPaymentValidated($user, $year) {
-        update_user_meta($user->ID, self::REG_KEY . '_' . $year . '_pay', 'yes');
-    }
-
-    protected function deleteUserPayment($user, $year) {
-        delete_user_meta($user->ID, self::REG_KEY . '_' . $year . '_pay');
-    }
-
     protected function getRegistrationYears() {
         global $wpdb;
 
@@ -99,45 +83,74 @@ class Mf100RegistrationCore {
         return false;
     }
 
-    protected function getRegisteredUsers($year) {
-        $users = get_users(array(
+    protected function sortUsers(&$users, $sortby, $order) {
+        if (!$sortby && 'DESC' == $order) {
+            $users = array_reverse($users, true);
+        } else if (!$sortby) {
+            /// do nothing
+        } else {
+            $function = function($userA, $userB) use ($sortby, $order) {
+                if (is_numeric($userA->$sortby)) {
+                    $cmp = function($a, $b) use ($order) {
+                        if ('ASC' == $order) {
+                            return $a - $b;
+                        } else {
+                            return $b - $a;
+                        }
+                    };
+                } else {
+                    $cmp = function($a, $b) use ($order) {
+                        if ('ASC' == $order) {
+                            strcasecmp($a, $b);
+                        } else {
+                            strcasecmp($b, $a);
+                        }
+                    };
+                }
+
+                return $cmp($userA->$sortby, $userB->$sortby);
+            };
+
+            uasort($users, $function);
+        }
+    }
+
+    protected function getRegisteredUsers($year, $sortby = '', $order = 'ASC') {
+        $rawUsers = get_users(array(
             'meta_key' => self::REG_KEY . '_' . $year,
             'fields' => 'all_with_meta'
         ));
 
-        foreach ($users as &$user) {
-            $meta = $this->prepareMeta(get_user_meta($user->ID));
-            foreach ($meta as $key => $value) {
-                $user->$key = $value;
-            }
+        $users = array();
+        foreach ($rawUsers as $user) {
+            $wpUser = new Mf100User($user);
+            $users[$user->ID] = $wpUser;
         }
+
+        $this->sortUsers($users, $sortby, $order);
 
         return $users;
     }
 
-    protected function prepareMeta($meta) {
-        $newMeta = array();
-        foreach ($meta as $key => $value) {
-            if (is_string($key) && self::META_KEY_PREFIX == substr($key, 0, strlen(self::META_KEY_PREFIX))) {
-                $key = substr($key, strlen(self::META_KEY_PREFIX));
-            }
-            if (!is_array($value[0]) && !is_object($value[0])) {
-                $newMeta[$key] = $value[0];
-            }
-        }
-        return $newMeta;
-    }
+    protected function getUnregisteredUsers($year, $sortby = '', $order = 'ASC') {
+        global $wpdb;
 
-    protected function getMf100Meta($idUser) {
-        $meta = get_user_meta($idUser);
-        $return = array();
-        foreach ($meta as $key => $value) {
-            if (is_string($key) && self::META_KEY_PREFIX == substr($key, 0, strlen(self::META_KEY_PREFIX))) {
-                $return[substr($key, strlen(self::META_KEY_PREFIX))] = $value[0];
-            }
+        $select =
+            "SELECT * FROM `{$wpdb->prefix}users` AS `u`
+                LEFT JOIN (SELECT DISTINCT `user_id` FROM `{$wpdb->prefix}usermeta` WHERE `meta_key` = '" . self::REG_KEY . "_{$year}') AS `m`
+                    ON `u`.`ID` = `m`.`user_id`
+                WHERE `m`.`user_id` IS NULL";
+        $rawUsers = $wpdb->get_results($select);
+
+        $users = array();
+        foreach ($rawUsers as $user) {
+            $wpUser = new Mf100User($user);
+            $users[$user->ID] = $wpUser;
         }
 
-        return $return;
+        $this->sortUsers($users, $sortby, $order);
+
+        return $users;
     }
 
     protected function getAvailableUserMeta() {

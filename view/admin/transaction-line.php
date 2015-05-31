@@ -8,7 +8,13 @@
 		}
 		$data = $transaction->getData();
 	?>
-    <td><?php echo $transaction->getId(); ?></td>
+
+    <?php if ('unmatched' == $part) : ?>
+        <td><a href="#" class="edit"><?php echo $transaction->getId(); ?></a></td>
+    <?php else : ?>
+        <td><?php echo $transaction->getId(); ?></td>
+    <?php endif; ?>
+
     <td><?php echo $user; ?></td>
     <td><?php echo $transaction->getDate(); ?></td>
     <td><?php echo $transaction->getAmount(); ?></td>

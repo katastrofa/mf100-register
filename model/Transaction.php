@@ -7,8 +7,16 @@ class Transaction {
     private $amount;
     private $date;
     private $user;
+    private $manualMatch;
 
     private $data = array();
+
+    public static function getById($id) {
+        global $wpdb;
+
+        $select = "SELECT * FROM `" . Mf100Transactions::$TABLE . "` WHERE `id` = $id";
+        return new Transaction($wpdb->get_row($select), false);
+    }
 
     public function __construct($data, $isJson = true) {
         if ($isJson) {
@@ -16,12 +24,14 @@ class Transaction {
             $this->amount = $data->column1->value;
             $this->date = $this->parseDate($data->column0->value);
             $this->user = null;
+            $this->manualMatch = 0;
             $this->data = $this->parseData($data);
         } else {
             $this->id = $data->id;
             $this->amount = intval($data->amount);
             $this->date = $data->date;
             $this->user = ($data->user) ? intval($data->user) : null;
+            $this->manualMatch = intval($data->manualMatch);
             $this->data = unserialize($data->data);
         }
     }
@@ -59,7 +69,8 @@ class Transaction {
                         `amount`={$this->amount},
                         `date`='{$this->date}',
                         `user`={$user},
-                        `data`='{$data}'
+                        `data`='{$data}',
+                        `manualMatch`={$this->manualMatch}
                     WHERE
                         `id`='{$this->id}'";
         } else {
@@ -70,6 +81,7 @@ class Transaction {
                     {$this->amount},
                     '{$this->date}',
                     {$user},
+                    {$this->manualMatch},
                     '{$data}'
                 )";
         }
@@ -133,5 +145,13 @@ class Transaction {
 
     public function setData($data) {
         $this->data = $data;
+    }
+
+    public function getManualMatch() {
+        return $this->manualMatch;
+    }
+
+    public function setManualMatch($manualMatch) {
+        $this->manualMatch = $manualMatch;
     }
 }

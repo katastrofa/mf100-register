@@ -16,4 +16,11 @@
             <?php $first = false; ?>
         <?php endforeach; ?>
     </div>
+
+    <div id="transaction-dialog-form" style="display: none;">
+        <fieldset>
+            <label for="user-id">User ID</label>
+            <input type="text" name="user-id" value="" class="text ui-widget-content ui-corner-all" />
+        </fieldset>
+    </div>
 </div>

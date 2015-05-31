@@ -13,6 +13,11 @@ class Mf100RegistrationAdmin extends Mf100RegistrationCore {
         add_action('admin_enqueue_scripts', array($this, 'addUsersMenuPageScripts'));
 
         add_action('wp_ajax_mf100_update_field_visibility', array($this, 'updateVisibility'));
+        add_action('wp_ajax_mf100_toggle_register', array($this, 'toggleRegistration'));
+        add_action('wp_ajax_mf100_resend_register_email', array($this, 'resendRegistrationEmail'));
+        add_action('wp_ajax_mf100_cancel_edit', array($this, 'cancelEditUser'));
+        add_action('wp_ajax_mf100_save_edit', array($this, 'saveEditUser'));
+        add_action('wp_ajax_mf100_match_transaction', array($this, 'saveMatchTransaction'));
     }
 
 
@@ -92,12 +97,13 @@ class Mf100RegistrationAdmin extends Mf100RegistrationCore {
 
     public function addUsersMenuPageScripts($hook) {
         if ('users_page_mf100' == $hook) {
-            wp_register_script('mf100-admin-script', MF100_BASE_LINK . 'js/admin.js', array('jquery'), '0.1', true);
+            wp_register_script('mf100-admin-script', MF100_BASE_LINK . 'js/admin.js', array('jquery'), '0.2.0.3', true);
             wp_enqueue_script('mf100-admin-script');
         }
         if ('users_page_mf100-transactions' == $hook) {
-            wp_register_script('mf100-transactions-script', MF100_BASE_LINK . 'js/transactions.js', array('jquery'), '0.1', true);
+            wp_register_script('mf100-transactions-script', MF100_BASE_LINK . 'js/transactions.js', array('jquery-ui-dialog'), '0.1', true);
             wp_enqueue_script('mf100-transactions-script');
+            wp_enqueue_style('wp-jquery-ui-dialog');
         }
     }
 
@@ -181,6 +187,94 @@ class Mf100RegistrationAdmin extends Mf100RegistrationCore {
             $userOptions->removeVisibleField($key);
         }
         $userOptions->storeOptions();
+
+        wp_die();
+    }
+
+    public function toggleRegistration() {
+        $year = trim($_POST['year']);
+        $race = trim($_POST['race']);
+        $user = intval(trim($_POST['user']));
+        $user = new Mf100User($user);
+
+        $user->toggleRegister($year, $race);
+        $fields = $this->getAvailableUserMeta();
+        $user = new Mf100User($user->ID);
+
+        $this->showTemplate(
+            'user-line',
+            array('user' => $user, 'alternate' => false, 'fields' => $fields, 'year' => $year)
+        );
+
+        wp_die();
+    }
+
+    public function resendRegistrationEmail() {
+        $user = intval(trim($_POST['user']));
+        $user_pass = wp_generate_password( 12, false );
+
+        wp_update_user(array(
+            'ID' => $user,
+            'user_pass' => $user_pass
+        ));
+
+        wp_new_user_notification( $user, $user_pass );
+
+        echo 'sent';
+        wp_die();
+    }
+
+    public function cancelEditUser() {
+        $year = trim($_POST['year']);
+        $user = intval(trim($_POST['user']));
+        $user = new Mf100User($user);
+        $fields = $this->getAvailableUserMeta();
+
+        $this->showTemplate(
+            'user-line',
+            array('user' => $user, 'alternate' => false, 'fields' => $fields, 'year' => $year)
+        );
+        wp_die();
+    }
+
+    public function saveEditUser() {
+        $user = intval(trim($_POST['user']));
+        $user = new Mf100User($user);
+
+        $editFields = array();
+        foreach ($_POST as $key => $value) {
+            if ('field-' == substr($key, 0, 6)) {
+                $editFields[substr($key, 6)] = $value;
+            }
+        }
+
+        $user->mf100Update($editFields);
+
+        $year = trim($_POST['year']);
+        $fields = $this->getAvailableUserMeta();
+        $user = new Mf100User($user->ID);
+
+        $this->showTemplate(
+            'user-line',
+            array('user' => $user, 'alternate' => false, 'fields' => $fields, 'year' => $year)
+        );
+        wp_die();
+    }
+
+    public function saveMatchTransaction() {
+        $user = intval(trim($_POST['user']));
+        $user = new Mf100User($user);
+
+        $transaction = intval(trim(preg_replace('/[^0-9]/i', '', $_POST['transaction'])));
+        $transaction = Transaction::getById($transaction);
+
+        $transaction->setManualMatch(1);
+        if (0 != $user->ID) {
+            $transaction->setUser($user->ID);
+            $options = Mf100Options::getInstance();
+            $user->validatePayment($options->getMatchingYear());
+        }
+        $transaction->save();
 
         wp_die();
     }
