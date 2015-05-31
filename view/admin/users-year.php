@@ -1,7 +1,14 @@
 <div class="mf100-reg-table-wrap year-<?php echo $year; ?>"<?php echo (!$first) ? ' style="display: none;"' : ''; ?>>
+    <?php if ($reg) : ?>
+        <h2>Registered</h2>
+    <?php else : ?>
+        <h2>Unregistered</h2>
+    <?php endif; ?>
+
     <table class="wp-list-table widefat fixed users">
         <thead>
             <tr>
+                <th scope="col">ID</th>
                 <th scope="col" class="manage-column column-name sortable desc">Meno</th>
                 <th scope="col" class="manage-column column-email sortable desc">Email</th>
                 <th scope="col">Platba</th>
@@ -16,6 +23,7 @@
         </thead>
         <tfoot>
             <tr>
+                <th scope="col">ID</th>
                 <th scope="col" class="manage-column column-name sortable desc">Meno</th>
                 <th scope="col" class="manage-column column-email sortable desc">Email</th>
                 <th scope="col">Platba</th>

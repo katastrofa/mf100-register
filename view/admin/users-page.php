@@ -20,11 +20,10 @@
         <?php $first = true; ?>
         <?php foreach ($years as $year => $nothing) : ?>
             <?php $users = $this->getRegisteredUsers($year); ?>
-            <?php $this->showTemplate('users-year', array('year' => $year, 'users' => $users, 'first' => $first, 'fields' => $fields)); ?>
+            <?php $this->showTemplate('users-year', array('year' => $year, 'users' => $users, 'first' => $first, 'fields' => $fields, 'reg' => true)); ?>
 
-            <h2>Unregistered</h2>
             <?php $users = $this->getUnregisteredUsers($year); ?>
-            <?php $this->showTemplate('users-year', array('year' => $year, 'users' => $users, 'first' => $first, 'fields' => $fields)); ?>
+            <?php $this->showTemplate('users-year', array('year' => $year, 'users' => $users, 'first' => $first, 'fields' => $fields, 'reg' => false)); ?>
 
             <?php $first = false; ?>
         <?php endforeach; ?>

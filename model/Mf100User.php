@@ -4,6 +4,7 @@ class Mf100User extends WP_User {
 
     const FIRST_NAME_FIELD = 'first_name';
     const LAST_NAME_FIELD = 'last_name';
+    const EMAIL_FIELD = 'user_email';
 
     const META_KEY_PREFIX = 'mf100-';
     const REG_KEY = 'mf100';
@@ -103,8 +104,18 @@ class Mf100User extends WP_User {
 
     public function mf100Update($data) {
         foreach ($data as $key => $value) {
-            if ($key == self::FIRST_NAME_FIELD || $key == self::LAST_NAME_FIELD) {
-                update_user_meta($this->ID, $key, $value);
+            $bPureOption = $key == self::FIRST_NAME_FIELD
+                    || $key == self::LAST_NAME_FIELD
+                    || 0 < preg_match('/' . self::REG_KEY . '_\d+(?:_pay)?/i', $key);
+
+            if ($bPureOption) {
+                if ($value) {
+                    update_user_meta($this->ID, $key, $value);
+                } else {
+                    delete_user_meta($this->ID, $key);
+                }
+            } else if ($key == self::EMAIL_FIELD) {
+                wp_update_user(array('ID' => $this->ID, $key => $value));
             } else {
                 update_user_meta($this->ID, self::META_KEY_PREFIX . $key, $value);
             }

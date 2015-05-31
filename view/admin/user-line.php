@@ -1,4 +1,5 @@
 <tr class="user-<?php echo $year; ?>-<?php echo $user->ID; ?>"<?php echo ($alternate) ? ' class="alternate"' : ''; ?>>
+    <td class="id"><?php echo $user->ID; ?></td>
     <td class="name">
         <strong><a href="#" class="edit"><?php echo $user->last_name . ' ' . $user->first_name; ?></a></strong>
         <div class="row-actions">

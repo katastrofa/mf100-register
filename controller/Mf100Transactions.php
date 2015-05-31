@@ -2,11 +2,28 @@
 
 class Mf100Transactions extends Mf100RegistrationCore {
 
+    const OPTION_DB_VERSION = 'mf100-transactions-db-version';
+    const DB_VERSION = '0.2';
+
     public static $TABLE = '';
 
     public static function init() {
         global $wpdb;
         self::$TABLE = $wpdb->prefix . 'mf100_bank_transactions';
+
+        $version = get_option(self::OPTION_DB_VERSION);
+        if ($version != self::DB_VERSION) {
+            self::update($version);
+        }
+    }
+
+    private static function update($currentVersion) {
+        global $wpdb;
+
+        $update = "ALTER TABLE `" . self::$TABLE . "` ADD COLUMN `manualMatch` TINYINT NOT NULL DEFAULT 0 AFTER `user`";
+        $wpdb->query($update);
+
+        update_option(self::OPTION_DB_VERSION, self::DB_VERSION);
     }
 
     public static function install() {
@@ -18,6 +35,7 @@ class Mf100Transactions extends Mf100RegistrationCore {
                 `amount` INT NOT NULL,
                 `date` DATETIME NOT NULL,
                 `user` INT,
+                `manualMatch` TINYINT NOT NULL DEFAULT 0,
                 `data` TEXT,
 
                 PRIMARY KEY (id)
@@ -67,10 +85,10 @@ class Mf100Transactions extends Mf100RegistrationCore {
         $transactions = $this->getRecordsFromDb('2014-01-01 00:00:00', date('Y-m-d H:i:s'));
         return array(
             'matched' => array_filter($transactions, function($entry) {
-                return $entry->getUser();
+                return $entry->getUser() || 0 < $entry->getManualMatch();
             }),
             'unmatched' => array_filter($transactions, function($entry) {
-                return !$entry->getUser();
+                return !$entry->getUser() && 0 >= $entry->getManualMatch();
             })
         );
     }

@@ -29,7 +29,7 @@
         <?php $alternate = false; ?>
         <?php foreach ($transactions as $transaction) : ?>
             <?php $alternate = $alternate xor true; ?>
-            <?php $this->showTemplate('transaction-line', array('transaction' => $transaction, 'alternate' => $alternate)); ?>
+            <?php $this->showTemplate('transaction-line', array('transaction' => $transaction, 'alternate' => $alternate, 'part' => $part)); ?>
         <?php endforeach; ?>
         </tbody>
 
