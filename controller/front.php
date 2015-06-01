@@ -13,12 +13,15 @@ class Mf100RegistrationFront extends Mf100RegistrationCore {
     private $bUserRegistered = false;
     private $objRegisteredUser = null;
     private $filledValues = false;
+    private $bUserLoggedIn = false;
 
 	public function __construct() {
 		add_shortcode('mf100_register', array($this, 'parseRegisterForm'));
         add_shortcode('mf100_list', array($this, 'showRegisteredUsers'));
         add_shortcode('mf100_response', array($this, 'showRegistrationResponse'));
+        add_shortcode('mf100_login', array($this, 'showCustomLogin'));
 		add_action('plugins_loaded', array($this, 'signUpUser'));
+        add_action('plugins_loaded', array($this, 'loginUser'));
 	}
 
 	protected function addInputField($form, $inputName, $value = '', $type = 'text') {
@@ -232,6 +235,42 @@ class Mf100RegistrationFront extends Mf100RegistrationCore {
             }
 		}
 	}
+
+    public function loginUser() {
+        if (isset($_POST['mf100-custom-login'])) {
+            $user = wp_signon();
+            if (is_wp_error($user)) {
+                $this->objErrors = $user;
+            } else {
+                $this->bUserLoggedIn = true;
+            }
+        }
+    }
+
+    public function showCustomLogin($atts, $content = '') {
+        $atts = shortcode_atts(
+            array('type' => 'form'),
+            $atts,
+            'mf100_login'
+        );
+        $user = wp_get_current_user();
+
+        if ('form' == $atts['type']) {
+            if ($user->ID || $this->bUserLoggedIn) {
+                return '';
+            }
+        } else if ('response' == $atts['type']) {
+            if (is_wp_error($this->objErrors)) {
+                $content = "<div>" . $this->objErrors->get_error_message() . '</div>';
+            } else if (!$this->bUserLoggedIn && 0 == $user->ID) {
+                $content = '';
+            }
+        } else {
+            $content = '';
+        }
+
+        return $content;
+    }
 
 ///==========================================================================================
 /// Display registered users
