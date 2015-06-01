@@ -93,17 +93,17 @@ class Mf100RegistrationCore {
                 if (is_numeric($userA->$sortby)) {
                     $cmp = function($a, $b) use ($order) {
                         if ('ASC' == $order) {
-                            return $a - $b;
+                            return intval($a) - intval($b);
                         } else {
-                            return $b - $a;
+                            return intval($b) - intval($a);
                         }
                     };
                 } else {
                     $cmp = function($a, $b) use ($order) {
                         if ('ASC' == $order) {
-                            strcasecmp($a, $b);
+                            return strcasecmp($a, $b);
                         } else {
-                            strcasecmp($b, $a);
+                            return strcasecmp($b, $a);
                         }
                     };
                 }
