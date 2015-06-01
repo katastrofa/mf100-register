@@ -63,13 +63,22 @@ class Mf100Transactions extends Mf100RegistrationCore {
         return $transactions;
     }
 
-    public function getRecordsFromDb($from, $to) {
+    public function getRecordsFromDb($from = '', $to = '') {
         global $wpdb;
 
-        $select =
-            "SELECT * FROM `" . self::$TABLE . "` WHERE
-                `date` >= '{$from}' AND
-                `date` <= '{$to}'";
+        $conditions = array();
+        if ($from) {
+            $conditions[] = "`date` >= '{$from}'";
+        }
+        if ($to) {
+            $conditions[] = "`date` <= '{$to}'";
+        }
+        $conditions = implode(" AND ", $conditions);
+        if ($conditions) {
+            $conditions = " WHERE " . $conditions;
+        }
+
+        $select = "SELECT * FROM `" . self::$TABLE . "`{$conditions}";
         $rawTransactions = $wpdb->get_results($select);
 
         $transactions = array();
@@ -116,7 +125,7 @@ class Mf100Transactions extends Mf100RegistrationCore {
         $url = $this->generateLink($from, $to, $token);
         $apiTransactions = $this->grabUrl($url);
         $apiTransactions = $this->parseJson($apiTransactions);
-        $dbTransactions = $this->getRecordsFromDb($from, $to);
+        $dbTransactions = $this->getRecordsFromDb();
 
         $newRecords = array_diff_key($apiTransactions, $dbTransactions);
         foreach ($newRecords as $record) {
