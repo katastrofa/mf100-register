@@ -279,12 +279,21 @@ class Mf100RegistrationFront extends Mf100RegistrationCore {
                     /// Register replacement and unregister self, move the payment info over
                     if (isset($_POST[self::REPLACEMENT_REG_FIELD]) && 0 != $currentUser->ID) {
                         $currentUser = new Mf100User($currentUser->ID);
-                        if ($currentUser->isPayment($year)) {
-                            $user->validatePayment($year);
-                            $currentUser->unvalidatePayment($year);
+                        if ($currentUser->isRegistered($year)) {
+                            $currentUser->unregister($year);
+                            $user->register($year, $race);
+                            if ($currentUser->isPayment($year)) {
+                                $user->validatePayment($year);
+                                $currentUser->unvalidatePayment($year);
+                            }
+
+                            $user = new Mf100User($user->ID);
+                            $infoMail =
+                                $currentUser->last_name . ' ' . $currentUser->first_name
+                                . ' -> zaregistroval nahradnika -> '
+                                . $user->last_name . ' ' . $user->first_name;
+                            wp_mail(get_option('admin_email'), 'Registracia nahradnika', $infoMail);
                         }
-                        $currentUser->unregister($year);
-                        $user->register($year, $race);
                     }
 
                     $this->bUserRegistered = true;
