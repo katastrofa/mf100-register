@@ -94,6 +94,14 @@ class Mf100User extends WP_User {
         delete_user_meta($this->ID, $key);
     }
 
+    public function isPayment($year) {
+        $key = self::REG_KEY . '_' . $year . '_pay';
+        if (isset($this->$key)) {
+            return $this->$key;
+        }
+        return false;
+    }
+
     public function getMetaKeys() {
         return $this->metaKeys;
     }

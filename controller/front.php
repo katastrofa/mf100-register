@@ -4,6 +4,8 @@
 
 class Mf100RegistrationFront extends Mf100RegistrationCore {
 
+    const REPLACEMENT_REG_FIELD = 'mf100-replacement-reg';
+
     private $FIELDS = array(
         'trasa' => 'mf100_%year%',
         'platba' => 'mf100_%year%_pay'
@@ -87,7 +89,7 @@ class Mf100RegistrationFront extends Mf100RegistrationCore {
         return $strHtml;
     }
 
-	protected function parseFormFields($content, $year, $values) {
+	protected function parseFormFields($content, $year, $values, $additionalHtml = array()) {
 		if (preg_match('/<form[^>]*>(.*)<\/form>/imsU', $content, $match)) {
 			$strHtml = $match[1];
 
@@ -98,6 +100,13 @@ class Mf100RegistrationFront extends Mf100RegistrationCore {
             $this->prefillValues($formFields, $values);
             $this->parseRequiredFields($formFields);
             $strHtml = $this->updateAllFieldsInForm($strHtml, $formFields);
+
+            if (isset($additionalHtml['before'])) {
+                $strHtml = $additionalHtml['before'] . $strHtml;
+            }
+            if (isset($additionalHtml['after'])) {
+                $strHtml .= $additionalHtml['after'];
+            }
 
 			$content = str_replace($match[1], $strHtml, $content);
 		}
@@ -167,21 +176,36 @@ class Mf100RegistrationFront extends Mf100RegistrationCore {
 
             $formHtml = $this->parseFormFields($formHtml, $atts['rocnik'], $this->filledValues);
 
-            $additionalContent = "";
+            $additionalContentAfter = "";
+            $additionalContentBefore = "";
             if ($allowReplacement) {
                 $json = new stdClass();
                 $json->data = $formHtml;
                 $json = json_encode($json);
 
-                $replacementFormHtml = $this->parseFormFields($replacementFormHtml, $atts['rocnik'], array());
+                $replacementFormHtml = $this->parseFormFields(
+                    $replacementFormHtml,
+                    $atts['rocnik'],
+                    array(),
+                    array('before' => $this->addInputField('', self::REPLACEMENT_REG_FIELD, 'yes', 'hidden'))
+                );
 
                 $jsonOriginal = new stdClass();
                 $jsonOriginal->data = $replacementFormHtml;
                 $jsonOriginal = json_encode($jsonOriginal);
 
-                $additionalContent = '<script type="text/javascript"></script>';
+                $url = plugins_url('js/form.js', dirname(__FILE__));
+                $additionalContentAfter =
+                    '<script type="text/javascript"> '
+                    . 'var mf100Own = ' . $json . ";\n"
+                    . 'var mf100Original = ' . $jsonOriginal . ";\n"
+                    . "</script>\n"
+                    . '<script type="text/javascript" src="' . $url . '"></script>';
+                $additionalContentBefore =
+                    '<input type="checkbox" name="nahradnik" id="nahradnik" value="yes" /> '
+                    . '<label>Registrácia náhradníka / Replacement registration</label>';
             }
-            $formHtml .= $additionalContent;
+            $formHtml = $additionalContentBefore . $formHtml . $additionalContentAfter;
 
             $content = str_replace($matchWhole[0], $formHtml, $content);
 
@@ -240,11 +264,28 @@ class Mf100RegistrationFront extends Mf100RegistrationCore {
                         $user = new Mf100User($idUser);
                     }
 
-                    $user->register($year, $race);
+                    /// Register new user only if nobody is logged in
+                    $currentUser = wp_get_current_user();
+                    if (0 != $currentUser->ID) {
+                        $currentUser = new Mf100User($currentUser->ID);
+                    } else {
+                        $user->register($year, $race);
+                    }
 
                     $aValues = $_POST;
                     unset($aValues['user_email'], $aValues['rocnik'], $aValues['mf100-reg']);
                     $user->mf100Update($aValues);
+
+                    /// Register replacement and unregister self, move the payment info over
+                    if (isset($_POST[self::REPLACEMENT_REG_FIELD]) && 0 != $currentUser->ID) {
+                        $currentUser = new Mf100User($currentUser->ID);
+                        if ($currentUser->isPayment($year)) {
+                            $user->validatePayment($year);
+                            $currentUser->unvalidatePayment($year);
+                        }
+                        $currentUser->unregister($year);
+                        $user->register($year, $race);
+                    }
 
                     $this->bUserRegistered = true;
                     $this->objRegisteredUser = $user;
