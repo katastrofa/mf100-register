@@ -147,20 +147,43 @@ class Mf100RegistrationFront extends Mf100RegistrationCore {
 
             $meta = Mf100User::getMf100Meta($user->ID);
             $this->filledValues = array_merge($this->filledValues, $meta);
+            $user = new Mf100User($user->ID);
         }
 
+        $allowReplacement = (0 != $user->ID && $user->isRegistered($atts['rocnik']));
+
         $options = Mf100Options::getInstance();
-        $formAndYearLocated = preg_match('/<form[^>]*>/imsU', $content, $match);
+        $formAndYearLocated = 0 < preg_match('/<form[^>]*>/imsU', $content, $match);
+        $wholeFormLocated = 0 < preg_match("/<form.*<\\/form>/imsU", $content, $matchWhole);
         $submission = (is_array($this->filledValues) && count($this->filledValues) > 0);
 
-        if ($formAndYearLocated && !$this->isRegFull($atts['rocnik']) && ($submission || !$options->isStopReg())) {
-			$strForm = str_replace("\n", ' ', $match[0]);
-
+        if ($formAndYearLocated && $wholeFormLocated && !$this->isRegFull($atts['rocnik']) && ($submission || !$options->isStopReg())) {
+            $strForm = str_replace("\n", ' ', $match[0]);
 			$strForm = $this->addTagAttribute($strForm, 'action', '');
 			$strForm = $this->addTagAttribute($strForm, 'name', 'registerform');
 
-			$content = str_replace($match[0], $strForm, $content);
-			$content = $this->parseFormFields($content, $atts['rocnik'], $this->filledValues);
+            $formHtml = str_replace($match[0], $strForm, $matchWhole[0]);
+            $replacementFormHtml = $formHtml;
+
+            $formHtml = $this->parseFormFields($formHtml, $atts['rocnik'], $this->filledValues);
+
+            $additionalContent = "";
+            if ($allowReplacement) {
+                $json = new stdClass();
+                $json->data = $formHtml;
+                $json = json_encode($json);
+
+                $replacementFormHtml = $this->parseFormFields($replacementFormHtml, $atts['rocnik'], array());
+
+                $jsonOriginal = new stdClass();
+                $jsonOriginal->data = $replacementFormHtml;
+                $jsonOriginal = json_encode($jsonOriginal);
+
+                $additionalContent = '<script type="text/javascript"></script>';
+            }
+            $formHtml .= $additionalContent;
+
+            $content = str_replace($matchWhole[0], $formHtml, $content);
 
 		} else {
             $content = '';
