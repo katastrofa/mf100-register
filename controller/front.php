@@ -162,11 +162,11 @@ class Mf100RegistrationFront extends Mf100RegistrationCore {
         $allowReplacement = (0 != $user->ID && $user->isRegistered($atts['rocnik']));
 
         $options = Mf100Options::getInstance();
-        $formAndYearLocated = 0 < preg_match('/<form[^>]*>/imsU', $content, $match);
-        $wholeFormLocated = 0 < preg_match("/<form.*<\\/form>/imsU", $content, $matchWhole);
+        $formAndYearLocated = (0 < preg_match('/<form[^>]*>/imsU', $content, $match))
+            && (0 < preg_match("/<form.*<\\/form>/imsU", $content, $matchWhole));
         $submission = (is_array($this->filledValues) && count($this->filledValues) > 0);
 
-        if ($formAndYearLocated && $wholeFormLocated && !$this->isRegFull($atts['rocnik']) && ($submission || !$options->isStopReg())) {
+        if ($formAndYearLocated && ((!$this->isRegFull($atts['rocnik']) && !$options->isStopReg()) || $submission)) {
             $strForm = str_replace("\n", ' ', $match[0]);
 			$strForm = $this->addTagAttribute($strForm, 'action', '');
 			$strForm = $this->addTagAttribute($strForm, 'name', 'registerform');
