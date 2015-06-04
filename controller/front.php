@@ -274,7 +274,7 @@ class Mf100RegistrationFront extends Mf100RegistrationCore {
 
                     $aValues = $_POST;
                     unset($aValues['user_email'], $aValues['rocnik'], $aValues['mf100-reg']);
-                    $user->mf100Update($aValues);
+                    $user->mf100Update($aValues, "");
 
                     /// Register replacement and unregister self, move the payment info over
                     if (isset($_POST[self::REPLACEMENT_REG_FIELD]) && 0 != $currentUser->ID) {

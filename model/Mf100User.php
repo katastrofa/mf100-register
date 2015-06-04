@@ -110,7 +110,7 @@ class Mf100User extends WP_User {
         $this->metaKeys[] = $key;
     }
 
-    public function mf100Update($data) {
+    public function mf100Update($data, $year) {
         foreach ($data as $key => $value) {
             $bPureOption = $key == self::FIRST_NAME_FIELD
                     || $key == self::LAST_NAME_FIELD
@@ -126,6 +126,11 @@ class Mf100User extends WP_User {
                 wp_update_user(array('ID' => $this->ID, $key => $value));
             } else {
                 update_user_meta($this->ID, self::META_KEY_PREFIX . $key, $value);
+            }
+
+            /// HACK:
+            if ('trasa' == $key && $year && $this->isRegistered($year)) {
+                $this->register($year, $value);
             }
         }
 

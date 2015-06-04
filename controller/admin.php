@@ -248,7 +248,8 @@ class Mf100RegistrationAdmin extends Mf100RegistrationCore {
             }
         }
 
-        $user->mf100Update($editFields);
+        $options = Mf100Options::getInstance();
+        $user->mf100Update($editFields, $options->getMatchingYear());
 
         $year = trim($_POST['year']);
         $fields = $this->getAvailableUserMeta();
