@@ -89,6 +89,7 @@
             var year = this.id.substr(10);
             $(".mf100-reg-table-wrap").hide();
             $(".year-" + year).show();
+            $("#csv-year").val(year);
         });
 
         /* fields options display */

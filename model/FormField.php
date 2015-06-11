@@ -70,6 +70,6 @@ abstract class FormField {
 
     public function isEditable() {
         $tag = preg_quote($this->tag);
-        return (preg_match('/<'.$tag.'[^>]*no-edit[^>]*>/imsU', $this->originalHtml) <= 0);
+        return (preg_match('/<'.$tag.'[^>]*(no-edit|data-no-edit)[^>]*>/imsU', $this->originalHtml) <= 0);
     }
 }

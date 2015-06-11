@@ -13,6 +13,8 @@ class Mf100RegistrationFront extends Mf100RegistrationCore {
 
     private $objErrors = null;
     private $bUserRegistered = false;
+    private $bReplacementRegistered = false;
+    private $bSettingsChange = false;
     private $objRegisteredUser = null;
     private $filledValues = false;
     private $bUserLoggedIn = false;
@@ -125,8 +127,10 @@ class Mf100RegistrationFront extends Mf100RegistrationCore {
             foreach ($this->objErrors as $key => $value) {
                 $errorText .= "<p>" . $key . " nie je vyplnene</p>\n";
             }
-        } else {
+        } else if (is_object($this->objErrors)) {
             $errorText .= "<p>" . $this->objErrors->get_error_message() . "</p>\n";
+        } else {
+            $errorText .= "<p>" . $this->objErrors . "</p>\n";
         }
 
         $errorText .= "</div>\n";
@@ -157,9 +161,11 @@ class Mf100RegistrationFront extends Mf100RegistrationCore {
             $meta = Mf100User::getMf100Meta($user->ID);
             $this->filledValues = array_merge($this->filledValues, $meta);
             $user = new Mf100User($user->ID);
+        } else if (0 != $user->ID) {
+            $user = new Mf100User($user->ID);
         }
 
-        $allowReplacement = (0 != $user->ID && $user->isRegistered($atts['rocnik']));
+        $allowReplacement = (0 != $user->ID && $user->isRegistered($atts['rocnik']) && $user->isPayment($atts['rocnik']));
 
         $options = Mf100Options::getInstance();
         $formAndYearLocated = (0 < preg_match('/<form[^>]*>/imsU', $content, $match))
@@ -252,6 +258,18 @@ class Mf100RegistrationFront extends Mf100RegistrationCore {
                 $email = trim($_POST[self::EMAIL_FIELD]);
                 $year = intval(trim($_POST[self::YEAR_FIELD]));
                 $race = intval(trim($_POST[self::RACE_FIELD]));
+
+                $user = wp_get_current_user();
+                if (0 != $user->ID) {
+                    $user = new Mf100User($user->ID);
+                    if (isset($_POST[self::REPLACEMENT_REG_FIELD]) && $user->isRegistered($year) && !$user->isPayment($year)) {
+                        throw new Mf100RegException(
+                            'Registrant musi mat zaplatene',
+                            "Registrácia náhradníka je možná iba po zaplatení štartovného poplatku"
+                        );
+                    }
+                }
+
                 $idUser = register_new_user($email, $email);
 
                 $bUserRegistered = is_wp_error($idUser)
@@ -287,6 +305,8 @@ class Mf100RegistrationFront extends Mf100RegistrationCore {
                                 $currentUser->unvalidatePayment($year);
                             }
 
+                            $this->bReplacementRegistered = true;
+
                             $user = new Mf100User($user->ID);
                             $infoMail =
                                 $currentUser->last_name . ' ' . $currentUser->first_name
@@ -294,6 +314,8 @@ class Mf100RegistrationFront extends Mf100RegistrationCore {
                                 . $user->last_name . ' ' . $user->first_name;
                             wp_mail(get_option('admin_email'), 'Registracia nahradnika', $infoMail);
                         }
+                    } else if (0 != $currentUser->ID) {
+                        $this->bSettingsChange = true;
                     }
 
                     $this->bUserRegistered = true;
@@ -399,7 +421,13 @@ class Mf100RegistrationFront extends Mf100RegistrationCore {
 
         $options = Mf100Options::getInstance();
 
-        if ($this->bUserRegistered && 'success' == $atts['type']) {
+        if ($this->bUserRegistered && 'success' == $atts['type'] && !$this->bReplacementRegistered && !$this->bSettingsChange) {
+            $content = str_replace('%first_name%', $this->objRegisteredUser->first_name, $content);
+            $content = str_replace('%last_name%', $this->objRegisteredUser->last_name, $content);
+        } else if ('replacement' == $atts['type'] && $this->bReplacementRegistered && !$this->bSettingsChange) {
+            $content = str_replace('%first_name%', $this->objRegisteredUser->first_name, $content);
+            $content = str_replace('%last_name%', $this->objRegisteredUser->last_name, $content);
+        } else if ('settings-change' == $atts['type'] && $this->bSettingsChange) {
             $content = str_replace('%first_name%', $this->objRegisteredUser->first_name, $content);
             $content = str_replace('%last_name%', $this->objRegisteredUser->last_name, $content);
         } else if ($options->isStopReg() && 'reg-stopped' == $atts['type']) {

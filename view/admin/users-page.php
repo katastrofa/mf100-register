@@ -10,6 +10,15 @@
         <?php endforeach; ?>
     </div>
 
+    <?php $currentYear = (is_array($years)) ? key($years) : ''; ?>
+
+    <div class="mf100-csv-export">
+        <form action="" method="post">
+            <input type="hidden" name="csv-year" id="csv-year" value="<?php echo $currentYear; ?>" />
+            <input type="submit" name="mf100-generate-csv" value="Generate CSV" />
+        </form>
+    </div>
+
     <h2 class="nav-tab-wrapper" id="mf100-nav-tabs">
         <?php foreach ($years as $year => $nothing) : ?>
             <a href="#" id="year-link-<?php echo $year; ?>" class="nav-tab"><?php echo $year; ?></a>
