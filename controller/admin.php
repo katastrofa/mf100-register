@@ -36,7 +36,40 @@ class Mf100RegistrationAdmin extends Mf100RegistrationCore {
         );
     }
 
+    private function generateCsv($year) {
+        $metaFields = array(self::FIRST_NAME_FIELD, self::LAST_NAME_FIELD, self::EMAIL_FIELD);
+        $metaFields = array_merge($metaFields, $this->getAvailableUserMeta());
+
+        $users = $this->getRegisteredUsers($year, self::LAST_NAME_FIELD);
+
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename=mf100-ucastnici-' . $year . '.csv');
+
+        $pOutput = fopen('php://output', 'w');
+        fputcsv($pOutput, $metaFields);
+
+        foreach ($users as $user) {
+            $array = array();
+            foreach ($metaFields as $field) {
+                if (isset($user->$field)) {
+                    $array[] = $user->$field;
+                } else {
+                    $array[] = 'no';
+                }
+            }
+
+            fputcsv($pOutput, $array);
+        }
+
+        fclose($pOutput);
+        die();
+    }
+
     public function initOptions() {
+        if (isset($_POST['mf100-generate-csv'])) {
+            $this->generateCsv($_POST['csv-year']);
+        }
+
         register_setting('mf100-options', Mf100Options::OPTIONS_NAME, array($this, 'parseOptions'));
 
         add_settings_section(
